@@ -1,9 +1,11 @@
 package messages;
 
+import peer.Peer;
+
 import java.nio.charset.StandardCharsets;
 
 public class CHUNK extends Message{
-    CHUNK(String protocolVersion, int senderId, String fileId, int chunkNo, byte[] body) {
+    public CHUNK(String protocolVersion, int senderId, String fileId, int chunkNo, byte[] body) {
         super(protocolVersion, "CHUNK", senderId, fileId, chunkNo, 0, body);
     }
 
@@ -25,5 +27,10 @@ public class CHUNK extends Message{
         System.arraycopy(this.body, 0, message, header.length, body.length);
 
         return message;
+    }
+
+    @Override
+    public void submitTask(Peer peer) {
+
     }
 }

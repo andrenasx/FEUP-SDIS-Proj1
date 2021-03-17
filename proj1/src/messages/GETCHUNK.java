@@ -1,9 +1,11 @@
 package messages;
 
+import peer.Peer;
+
 import java.nio.charset.StandardCharsets;
 
 public class GETCHUNK extends Message {
-    GETCHUNK(String protocolVersion, int senderId, String fileId, int chunkNo) {
+    public GETCHUNK(String protocolVersion, int senderId, String fileId, int chunkNo) {
         super(protocolVersion, "GETCHUNK", senderId, fileId, chunkNo, 0, new byte[0]);
     }
 
@@ -15,5 +17,10 @@ public class GETCHUNK extends Message {
                 this.senderId,
                 this.fileId,
                 this.chunkNo).getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public void submitTask(Peer peer) {
+
     }
 }

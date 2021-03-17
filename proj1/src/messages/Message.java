@@ -1,16 +1,20 @@
 package messages;
 
+
+
+import peer.Peer;
+
 import java.net.DatagramPacket;
 import java.util.Arrays;
 
-abstract class Message {
-    protected String protocolVersion;
+public abstract class Message {
+    public String protocolVersion;
     protected String messageType;
-    protected int senderId;
-    protected String fileId;
-    protected int chunkNo;
-    protected int replicationDeg;
-    protected byte[] body;
+    public int senderId;
+    public String fileId;
+    public int chunkNo;
+    public int replicationDeg;
+    public byte[] body;
 
     Message(String protocolVersion, String messageType, int senderId, String fileId, int chunkNo, int replicationDeg, byte[] body) {
         this.protocolVersion = protocolVersion;
@@ -21,6 +25,7 @@ abstract class Message {
         this.replicationDeg = replicationDeg;
         this.body = body;
     }
+
 
     public static Message create(DatagramPacket packet) throws Exception {
         String message = new String(packet.getData());
@@ -71,7 +76,16 @@ abstract class Message {
             default:
                 throw new Exception("Unknown message type");
         }
+
     }
 
     public abstract byte[] encode();
+
+    public abstract void submitTask(Peer peer);
+
+    public boolean messageOwner(int peerId){
+        return peerId==this.senderId;
+    }
+
+
 }

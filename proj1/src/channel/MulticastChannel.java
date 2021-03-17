@@ -1,5 +1,8 @@
 package channel;
 
+import messages.Message;
+import peer.Peer;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -8,14 +11,15 @@ import java.net.MulticastSocket;
 public class MulticastChannel extends MulticastSocket implements Runnable {
     private InetAddress address;
     private int port;
+    private Peer peer;
 
-    public MulticastChannel(String addressString, int port) throws IOException {
+    public MulticastChannel(String addressString, int port, Peer peer) throws IOException {
         // Create Socket
         super(port);
 
         this.address = InetAddress.getByName(addressString);
         this.port = port;
-
+        this.peer=peer;
         this.setTimeToLive(1);
         this.joinGroup(this.address);
     }
@@ -28,8 +32,16 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
 
             try {
                 this.receive(packet);
-                System.out.println("Received packet with length " + packet.getLength());
-            } catch (IOException e) {
+                //System.out.println("Received packet with length " + packet.getLength());
+
+                Message message = Message.create(packet);
+
+                if(!message.messageOwner(this.peer.getId())){
+
+                    message.submitTask(this.peer);
+                }
+
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -40,7 +52,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
 
         try {
             this.send(packet);
-            System.out.println("Sent packet with length " + packet.getLength());
+            //System.out.println("Sent packet with length " + packet.getLength());
         } catch (IOException e) {
             e.printStackTrace();
         }
