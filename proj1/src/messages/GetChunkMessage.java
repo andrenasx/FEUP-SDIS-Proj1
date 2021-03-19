@@ -4,8 +4,8 @@ import peer.Peer;
 
 import java.nio.charset.StandardCharsets;
 
-public class GETCHUNK extends Message {
-    public GETCHUNK(String protocolVersion, int senderId, String fileId, int chunkNo) {
+public class GetChunkMessage extends Message {
+    public GetChunkMessage(String protocolVersion, int senderId, String fileId, int chunkNo) {
         super(protocolVersion, "GETCHUNK", senderId, fileId, chunkNo, 0, new byte[0]);
     }
 

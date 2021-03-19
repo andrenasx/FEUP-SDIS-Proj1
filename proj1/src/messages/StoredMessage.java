@@ -1,14 +1,13 @@
 package messages;
 
-import Tasks.PutchunkTask;
-import Tasks.StoredTask;
-import Tasks.Task;
+import tasks.StoredTask;
+import tasks.Task;
 import peer.Peer;
 
 import java.nio.charset.StandardCharsets;
 
-public class STORED extends Message{
-    public STORED(String protocolVersion, int senderId, String fileId, int chunkNo) {
+public class StoredMessage extends Message{
+    public StoredMessage(String protocolVersion, int senderId, String fileId, int chunkNo) {
         super(protocolVersion, "STORED", senderId, fileId, chunkNo, 0, new byte[0]);
     }
 

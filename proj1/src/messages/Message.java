@@ -58,21 +58,21 @@ public abstract class Message {
             case "PUTCHUNK":
                 chunkNo = Integer.parseInt(header[4]);
                 replicationDeg = Integer.parseInt(header[5]);
-                return new PUTCHUNK(protocolVersion, senderId, fileId, chunkNo, replicationDeg, body);
+                return new PutChunkMessage(protocolVersion, senderId, fileId, chunkNo, replicationDeg, body);
             case "STORED":
                 chunkNo = Integer.parseInt(header[4]);
-                return new STORED(protocolVersion, senderId, fileId, chunkNo);
+                return new StoredMessage(protocolVersion, senderId, fileId, chunkNo);
             case "GETCHUNK":
                 chunkNo = Integer.parseInt(header[4]);
-                return new GETCHUNK(protocolVersion, senderId, fileId, chunkNo);
+                return new GetChunkMessage(protocolVersion, senderId, fileId, chunkNo);
             case "CHUNK":
                 chunkNo = Integer.parseInt(header[4]);
-                return new CHUNK(protocolVersion, senderId, fileId, chunkNo, body);
+                return new ChunkMessage(protocolVersion, senderId, fileId, chunkNo, body);
             case "DELETE":
-                return new DELETE(protocolVersion, senderId, fileId);
+                return new DeleteMessage(protocolVersion, senderId, fileId);
             case "REMOVED":
                 chunkNo = Integer.parseInt(header[4]);
-                return new REMOVED(protocolVersion, senderId, fileId, chunkNo);
+                return new RemovedMessage(protocolVersion, senderId, fileId, chunkNo);
             default:
                 throw new Exception("Unknown message type");
         }

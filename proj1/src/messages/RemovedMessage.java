@@ -4,8 +4,8 @@ import peer.Peer;
 
 import java.nio.charset.StandardCharsets;
 
-public class REMOVED extends Message{
-    public REMOVED(String protocolVersion, int senderId, String fileId, int chunkNo) {
+public class RemovedMessage extends Message{
+    public RemovedMessage(String protocolVersion, int senderId, String fileId, int chunkNo) {
         super(protocolVersion, "REMOVED", senderId, fileId, chunkNo, 0, new byte[0]);
     }
 

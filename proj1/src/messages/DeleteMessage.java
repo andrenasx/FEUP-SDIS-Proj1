@@ -4,8 +4,8 @@ import peer.Peer;
 
 import java.nio.charset.StandardCharsets;
 
-public class DELETE extends Message{
-    public DELETE(String protocolVersion, int senderId, String fileId) {
+public class DeleteMessage extends Message{
+    public DeleteMessage(String protocolVersion, int senderId, String fileId) {
         super(protocolVersion, "DELETE", senderId, fileId, -1, 0, new byte[0]);
     }
 
