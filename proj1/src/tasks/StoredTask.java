@@ -1,5 +1,4 @@
-package Tasks;
-
+package tasks;
 
 import messages.Message;
 import peer.Peer;
@@ -12,12 +11,11 @@ public class StoredTask extends Task {
 
     @Override
     public void run() {
-
-
         Chunk c;
+
+        // Add peer acknowledge to received STORED messages
         if(this.peer.hasStoredChunk(this.message.fileId,this.message.chunkNo) ) {
             c = this.peer.getStoredChunk(this.message.fileId,this.message.chunkNo);
-            //this.peer.addChunk(c.getUniqueId(),c);
             c.addPeer(this.message.senderId);
             System.out.println(String.format("Received STORED from peer %d chunk %d of file %s",this.message.senderId,c.getChunkNo(),c.getFileId()));
         }
@@ -26,7 +24,5 @@ public class StoredTask extends Task {
             c.addPeer(this.message.senderId);
             System.out.println(String.format("Received STORED from peer %d chunk %d of file %s",this.message.senderId,c.getChunkNo(),c.getFileId()));
         }
-
-
     }
 }

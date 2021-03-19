@@ -34,15 +34,12 @@ public class Peer implements PeerInit {
     private final ExecutorService threadPoolMDB;
     private final ExecutorService threadPoolMDR;
 
-    public static int MAX_THREADS=16;
-    public static int MAX_THREADS_C=128;
+    public static int MAX_THREADS = 16;
+    public static int MAX_THREADS_C = 128;
 
-    private final ConcurrentHashMap<String,Chunk> storedChunks;
-
-    private final ConcurrentHashMap<String,Chunk> sentChunks;
-
-    private final ConcurrentHashMap<String,String> filePathMap;
-
+    private final ConcurrentHashMap<String, Chunk> storedChunks;
+    private final ConcurrentHashMap<String, Chunk> sentChunks;
+    private final ConcurrentHashMap<String, String> filePathMap;
     private final String storagePath;
 
     public Peer(String[] args) throws IOException {
@@ -59,18 +56,16 @@ public class Peer implements PeerInit {
         mdrChannel = new MulticastChannel(args[7], Integer.parseInt(args[8]), this);
 
 
-        this.threadPoolMC=Executors.newFixedThreadPool(MAX_THREADS_C);
-        this.threadPoolMDB=Executors.newFixedThreadPool(MAX_THREADS);
-        this.threadPoolMDR=Executors.newFixedThreadPool(MAX_THREADS);
+        this.threadPoolMC = Executors.newFixedThreadPool(MAX_THREADS_C);
+        this.threadPoolMDB = Executors.newFixedThreadPool(MAX_THREADS);
+        this.threadPoolMDR = Executors.newFixedThreadPool(MAX_THREADS);
 
-
-        this.storagePath="../assets/Peer" + this.id + "/";
+        this.storagePath = "../assets/Peer" + this.id + "/";
     }
 
 
-
     public static void main(String[] args) throws IOException {
-        if(args.length != 9){
+        if (args.length != 9) {
             System.out.println("Usage: java Peer <protocolVersion> <peerId> <serviceAccessPoint> <mcAddress> <mcPort> <mdbAddress> <mdbPort> <mdrAddress> <mdrPort>");
             return;
         }
@@ -91,88 +86,100 @@ public class Peer implements PeerInit {
         (new Thread(peer.mdrChannel)).start();
     }
 
-    public void addStoredChunk(String chunkId, Chunk chunk){
-        this.storedChunks.put(chunkId,chunk);
+    public void addStoredChunk(String chunkId, Chunk chunk) {
+        this.storedChunks.put(chunkId, chunk);
     }
 
-    public void removeStoredChunk(String chunkUniqueId){ this.storedChunks.remove(chunkUniqueId); }
+    public void removeStoredChunk(String chunkUniqueId) {
+        this.storedChunks.remove(chunkUniqueId);
+    }
 
-    public void addSentChunk(Chunk chunk){this.sentChunks.put(chunk.getUniqueId(),chunk);}
+    public void addSentChunk(Chunk chunk) {
+        this.sentChunks.put(chunk.getUniqueId(), chunk);
+    }
 
-    public Chunk getStoredChunk(String chunkId){
+    public Chunk getStoredChunk(String chunkId) {
         return this.storedChunks.get(chunkId);
     }
 
-    public Chunk getStoredChunk(String fileId, int chunkId){
+    public Chunk getStoredChunk(String fileId, int chunkId) {
         return this.storedChunks.get(fileId + "_" + chunkId);
     }
 
-    public Chunk getSentChunk(String chunkId){
+    public Chunk getSentChunk(String chunkId) {
         return this.sentChunks.get(chunkId);
     }
 
-    public Chunk getSentChunk(String fileId, int chunkId){
+    public Chunk getSentChunk(String fileId, int chunkId) {
         return this.sentChunks.get(fileId + "_" + chunkId);
     }
 
-    public boolean hasStoredChunk(String fileId, int chunkId){ return this.storedChunks.containsKey(fileId + "_" + chunkId); }
+    public boolean hasStoredChunk(String fileId, int chunkId) {
+        return this.storedChunks.containsKey(fileId + "_" + chunkId);
+    }
 
-    public boolean hasStoredChunk(String uniqueId) { return this.storedChunks.containsKey(uniqueId); }
+    public boolean hasStoredChunk(String uniqueId) {
+        return this.storedChunks.containsKey(uniqueId);
+    }
 
-    public boolean hasSentChunk(String fileId, int chunkId){ return this.sentChunks.containsKey(fileId + "_" + chunkId); }
+    public boolean hasSentChunk(String fileId, int chunkId) {
+        return this.sentChunks.containsKey(fileId + "_" + chunkId);
+    }
 
-    public boolean hasSentChunk(String uniqueId) { return this.sentChunks.containsKey(uniqueId); }
+    public boolean hasSentChunk(String uniqueId) {
+        return this.sentChunks.containsKey(uniqueId);
+    }
 
-
-
-    public void submitControlThread(Runnable action){
-
+    public void submitControlThread(Runnable action) {
         this.threadPoolMC.submit(action);
     }
-    public void submitBackupThread(Runnable action){
+
+    public void submitBackupThread(Runnable action) {
         this.threadPoolMDB.submit(action);
     }
-    public void submitRestoreThread(Runnable action){
+
+    public void submitRestoreThread(Runnable action) {
         this.threadPoolMDR.submit(action);
     }
 
-    public void sendControlMessage(Message message){
+    public void sendControlMessage(Message message) {
         this.mcChannel.sendMessage(message.encode());
     }
 
-    public void sendBackupMessage(Message message){
+    public void sendBackupMessage(Message message) {
         this.mdbChannel.sendMessage(message.encode());
     }
 
-    public void sendRestoreMessage(Message message){
+    public void sendRestoreMessage(Message message) {
         this.mdrChannel.sendMessage(message.encode());
     }
 
 
-    public String getProtocolVersion(){return this.protocolVersion;}
+    public String getProtocolVersion() {
+        return this.protocolVersion;
+    }
 
-    public int getId(){return this.id;}
-
-
+    public int getId() {
+        return this.id;
+    }
 
 
     public void storeChunk(Chunk chunk) {
-        System.out.println(String.format("Storing chunk no %d",chunk.getChunkNo()));
+        System.out.println(String.format("Storing chunk no %d", chunk.getChunkNo()));
         try {
-            Path path = Paths.get(this.storagePath+chunk.getUniqueId());
+            Path path = Paths.get(this.storagePath + chunk.getUniqueId());
             Files.createDirectories(path.getParent());
 
-            FileOutputStream out = new FileOutputStream(this.storagePath+chunk.getUniqueId());
+            FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
             out.write(chunk.getBody());
             out.close();
 
             // System.out.println("[InternalState] - chunk " + sChunk.chunkNo + " saved successfully");
         } catch (IOException e) {
-            System.out.println(String.format("Failed to store chunk %s",chunk.getUniqueId()));
+            System.out.println(String.format("Failed to store chunk %s", chunk.getUniqueId()));
             e.printStackTrace();
         }
     }
-
 
 
     @Override
@@ -188,13 +195,12 @@ public class Peer implements PeerInit {
     }
 
     @Override
-    public void backup(String filepath,int replicationDegree) {
-        StorageFile storage = new StorageFile(this, filepath, replicationDegree);
-        this.filePathMap.put(storage.getFileId(),filepath);
+    public void backup(String filepath, int replicationDegree) {
+        StorageFile file = new StorageFile(this, filepath, replicationDegree);
+        this.filePathMap.put(file.getFileId(), filepath);
         try {
-            storage.backup();
-        }
-        catch (IOException e){
+            file.backup();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -219,6 +225,4 @@ public class Peer implements PeerInit {
         System.out.println("Implement STATE");
         return "IMPLEMENT IT";
     }
-
-
 }

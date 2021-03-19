@@ -4,7 +4,6 @@ package storage;
 import messages.Message;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,7 +16,7 @@ public class Chunk implements Serializable {
     private byte[] body;
     private final Set<Integer> peersAcks = ConcurrentHashMap.newKeySet();
 
-    private boolean savedLocally= false;
+    private boolean storedLocally = false;
 
     public Chunk (Message m){
         this(m.fileId, m.chunkNo, m.replicationDeg, m.body);
@@ -86,11 +85,11 @@ public class Chunk implements Serializable {
 
     public byte[] getBody() { return body; }
 
-    public boolean isSavedLocally() {
-        return savedLocally;
+    public boolean isStoredLocally() {
+        return storedLocally;
     }
 
-    public void setSavedLocally(boolean savedLocally) {
-        this.savedLocally = savedLocally;
+    public void setStoredLocally(boolean storedLocally) {
+        this.storedLocally = storedLocally;
     }
 }
