@@ -163,20 +163,15 @@ public class Peer implements PeerInit {
     }
 
 
-    public void storeChunk(Chunk chunk, byte[] body) {
-        try {
-            Path path = Paths.get(this.storagePath + chunk.getUniqueId());
-            Files.createDirectories(path.getParent());
+    public void storeChunk(Chunk chunk, byte[] body) throws IOException {
+        Path path = Paths.get(this.storagePath + chunk.getUniqueId());
+        Files.createDirectories(path.getParent());
 
-            FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
-            out.write(body);
-            out.close();
+        FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
+        out.write(body);
+        out.close();
 
-            System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
-        } catch (IOException e) {
-            System.out.printf("Failed to store chunk %s\n", chunk.getUniqueId());
-            e.printStackTrace();
-        }
+        System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
     }
 
 

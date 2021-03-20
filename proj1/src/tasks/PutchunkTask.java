@@ -6,6 +6,8 @@ import peer.Peer;
 import storage.Chunk;
 import utils.Utils;
 
+import java.io.IOException;
+
 public class PutchunkTask extends Task {
     public PutchunkTask(Peer peer, Message message) {
         super(peer, message);
@@ -40,11 +42,18 @@ public class PutchunkTask extends Task {
         if (chunk.needsReplication()) {
             chunk.setStoredLocally(true);
             chunk.addPeerAck(this.peer.getId());
-            this.peer.storeChunk(chunk, this.message.body);
 
-            StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
-            this.peer.sendControlMessage(message);
-            //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
+            try {
+                // Store chunk in file
+                this.peer.storeChunk(chunk, this.message.body);
+
+                // Send stored message
+                StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
+                this.peer.sendControlMessage(message);
+                //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
+            } catch (IOException e) {
+                System.out.printf("Failed to store chunk %s\n", chunk.getUniqueId());
+            }
         }
         // Else if already replicated remove from peer map
         else {
