@@ -29,7 +29,7 @@ public class PutchunkTask extends Task {
             if (c.isStoredLocally()) {
                 StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), c.getFileId(), c.getChunkNo());
                 this.peer.sendControlMessage(message);
-                System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", c.getChunkNo(), c.getFileId()));
+                //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", c.getChunkNo(), c.getFileId()));
                 return;
             }
         }
@@ -46,12 +46,12 @@ public class PutchunkTask extends Task {
 
             StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), c.getFileId(), c.getChunkNo());
             this.peer.sendControlMessage(message);
-            System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", c.getChunkNo(), c.getFileId()));
+            //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", c.getChunkNo(), c.getFileId()));
         }
         // Else if already replicated remove from peer map
         else {
             this.peer.removeStoredChunk(c.getUniqueId());
-            System.out.println(String.format("Chunk No: %d of file: %s is already completely replicated", c.getChunkNo(), c.getFileId()));
+            //System.out.println(String.format("Chunk No: %d of file: %s is already completely replicated", c.getChunkNo(), c.getFileId()));
         }
     }
 }

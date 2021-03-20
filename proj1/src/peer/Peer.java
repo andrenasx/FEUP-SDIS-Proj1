@@ -15,6 +15,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -114,6 +115,10 @@ public class Peer implements PeerInit {
         return this.sentChunks.get(fileId + "_" + chunkId);
     }
 
+    public ArrayList<Chunk> getChunksByFile(String fileId) {
+    return null;
+    }
+
     public boolean hasStoredChunk(String fileId, int chunkId) {
         return this.storedChunks.containsKey(fileId + "_" + chunkId);
     }
@@ -206,14 +211,17 @@ public class Peer implements PeerInit {
     }
 
     @Override
+    public void delete(String filepath)   {
+        StorageFile file = new StorageFile(this, filepath, -1);
+        file.delete();
+    }
+
+    @Override
     public void restore(String filepath) throws RemoteException {
         System.out.println("Implement RESTORE");
     }
 
-    @Override
-    public void delete(String filepath) throws RemoteException {
-        System.out.println("Implement DELETE");
-    }
+
 
     @Override
     public void reclaim(int diskspace) throws RemoteException {

@@ -2,6 +2,7 @@ package storage;
 
 import tasks.BackupProtocol;
 import peer.Peer;
+import tasks.DeleteProtocol;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,6 +69,12 @@ public class StorageFile {
         }
 
         fileReader.close();
+    }
+
+
+    public void delete(){
+        DeleteProtocol delete = new DeleteProtocol(this.peer,this.fileId);
+        this.peer.submitControlThread(delete);
     }
 
     private void createFileId() {

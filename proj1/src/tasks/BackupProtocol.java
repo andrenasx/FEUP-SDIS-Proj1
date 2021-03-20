@@ -27,7 +27,7 @@ public class BackupProtocol implements Runnable {
         int attempt = 0;
         do {
             this.peer.sendBackupMessage(putChunkMessage);
-            System.out.println(String.format("Sent PUTCHUNK: chunk no: %d ; file: %s", putChunkMessage.chunkNo, putChunkMessage.fileId));
+            //System.out.println(String.format("Sent PUTCHUNK: chunk no: %d ; file: %s", putChunkMessage.chunkNo, putChunkMessage.fileId));
             int wait = (int) Math.pow(2, attempt) * 1000;
 
 
