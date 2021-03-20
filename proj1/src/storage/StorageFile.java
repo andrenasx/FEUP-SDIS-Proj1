@@ -17,9 +17,9 @@ import java.security.NoSuchAlgorithmException;
 
 public class StorageFile {
     private final Peer peer;
-    private String filePath;
+    private final String filePath;
     private String fileId;
-    private int replicationDegree;
+    private final int replicationDegree;
     private static final int CHUNK_SIZE = 64000;
 
     public StorageFile(Peer peer, String filePath, int replicationDegree) {
@@ -55,16 +55,18 @@ public class StorageFile {
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);
 
-            System.out.println(String.format("Submitted chunk %d", i));
+            System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
         }
 
         // If the file size is a multiple of the chunk size, the last chunk has size 0
         if (fileSize % CHUNK_SIZE == 0) {
-            Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, new byte[0]);
+            Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
             this.peer.addSentChunk(chunk);
 
-            BackupProtocol backup = new BackupProtocol(this.peer, chunk);
-            this.peer.submitBackupThread(backup);
+            BackupProtocol bp = new BackupProtocol(this.peer, chunk);
+            this.peer.submitBackupThread(bp);
+
+            System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
         }
 
         fileReader.close();
@@ -94,19 +96,11 @@ public class StorageFile {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
     public String getFileId() {
         return fileId;
     }
 
     public int getReplicationDegree() {
         return replicationDegree;
-    }
-
-    public void setReplicationDegree(int replicationDegree) {
-        this.replicationDegree = replicationDegree;
     }
 }

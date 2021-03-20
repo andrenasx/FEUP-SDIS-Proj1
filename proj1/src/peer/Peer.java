@@ -25,7 +25,6 @@ public class Peer implements PeerInit {
     private final String serviceAccessPoint; // remoteObjectName since we will be using RMI
 
     // Multicast Channels
-
     private final MulticastChannel mcChannel; // Control Channel
     private final MulticastChannel mdbChannel; // Data Backup Channel
     private final MulticastChannel mdrChannel; // Data Restore Channel
@@ -164,19 +163,18 @@ public class Peer implements PeerInit {
     }
 
 
-    public void storeChunk(Chunk chunk) {
-        System.out.println(String.format("Storing chunk no %d", chunk.getChunkNo()));
+    public void storeChunk(Chunk chunk, byte[] body) {
         try {
             Path path = Paths.get(this.storagePath + chunk.getUniqueId());
             Files.createDirectories(path.getParent());
 
             FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
-            out.write(chunk.getBody());
+            out.write(body);
             out.close();
 
-            // System.out.println("[InternalState] - chunk " + sChunk.chunkNo + " saved successfully");
+            System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
         } catch (IOException e) {
-            System.out.println(String.format("Failed to store chunk %s", chunk.getUniqueId()));
+            System.out.printf("Failed to store chunk %s\n", chunk.getUniqueId());
             e.printStackTrace();
         }
     }
