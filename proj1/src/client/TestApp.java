@@ -33,13 +33,6 @@ public class TestApp {
                     int replicationDeg = Integer.parseInt(args[3]);
                     peer.backup(filepath,replicationDeg);
 
-
-                    try {
-                        peer.backup(filepath, replicationDeg);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-
                     break;
                 }
                 case "RESTORE": {
