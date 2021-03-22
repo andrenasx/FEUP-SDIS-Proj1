@@ -3,6 +3,7 @@ package storage;
 import tasks.BackupProtocol;
 import peer.Peer;
 import tasks.DeleteProtocol;
+import utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,12 +24,12 @@ public class StorageFile {
     private int replicationDegree;
     private static final int CHUNK_SIZE = 64000;
 
-    public StorageFile(Peer peer, String filePath, int replicationDegree) {
+    public StorageFile(Peer peer, String filePath, int replicationDegree) throws IOException, NoSuchAlgorithmException {
         this.peer = peer;
         this.filePath = filePath;
         this.replicationDegree = replicationDegree;
 
-        this.createFileId();
+        this.fileId= Utils.createFileId(filePath);
     }
 
     public void backup() throws IOException {
@@ -77,25 +78,7 @@ public class StorageFile {
         this.peer.submitControlThread(delete);
     }
 
-    private void createFileId() {
-        // Create string from file metadata
-        String bitstring = this.filePath;
-        try {
-            BasicFileAttributes metadata = Files.readAttributes(Paths.get(this.filePath), BasicFileAttributes.class);
-            bitstring = this.filePath + metadata.creationTime() + metadata.lastModifiedTime() + metadata.size();
-        } catch (IOException e) {
-            System.out.println("Can't load metadata");
-        }
 
-        // Apply SHA256 to the string
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(bitstring.getBytes(StandardCharsets.UTF_8));
-            this.fileId = String.format("%064x", new BigInteger(1, hash));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-    }
 
     public String getFilePath() {
         return filePath;

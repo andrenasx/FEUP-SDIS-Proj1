@@ -4,7 +4,9 @@ import channel.MulticastChannel;
 import messages.Message;
 import storage.Chunk;
 import storage.StorageFile;
+import utils.Utils;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +17,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +42,7 @@ public class Peer implements PeerInit {
 
     private final ConcurrentHashMap<String, Chunk> storedChunks;
     private final ConcurrentHashMap<String, Chunk> sentChunks;
-    private final ConcurrentHashMap<String, String> filePathMap;
+    private final ConcurrentHashMap<String, StorageFile> fileMap;
     private final String storagePath;
 
     public Peer(String[] args) throws IOException {
@@ -49,7 +51,7 @@ public class Peer implements PeerInit {
         this.serviceAccessPoint = args[2];
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
-        this.filePathMap = new ConcurrentHashMap<>();
+        this.fileMap = new ConcurrentHashMap<>();
 
         // Create Channels
         mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);
@@ -115,9 +117,6 @@ public class Peer implements PeerInit {
         return this.sentChunks.get(fileId + "_" + chunkId);
     }
 
-    public ArrayList<Chunk> getChunksByFile(String fileId) {
-    return null;
-    }
 
     public boolean hasStoredChunk(String fileId, int chunkId) {
         return this.storedChunks.containsKey(fileId + "_" + chunkId);
@@ -159,13 +158,16 @@ public class Peer implements PeerInit {
         this.mdrChannel.sendMessage(message.encode());
     }
 
-
     public String getProtocolVersion() {
         return this.protocolVersion;
     }
 
     public int getId() {
         return this.id;
+    }
+
+    public ConcurrentHashMap<String, Chunk> getStoredChunks() {
+        return this.storedChunks;
     }
 
 
@@ -186,6 +188,23 @@ public class Peer implements PeerInit {
         }
     }
 
+    public void deleteChunk(Chunk chunk) {
+        System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
+        File file = new File(this.storagePath + chunk.getUniqueId());
+        if (file.delete()) {
+            System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
+            this.storedChunks.remove(chunk.getUniqueId());
+        }
+    }
+
+    public void deleteSentChunks(String fileId) {
+        for (Chunk chunk : this.storedChunks.values()) {
+            if (chunk.getFileId().equals(fileId)) {
+                this.storedChunks.remove(chunk.getUniqueId());
+            }
+        }
+    }
+
 
     @Override
     public String toString() {
@@ -201,26 +220,27 @@ public class Peer implements PeerInit {
 
     @Override
     public void backup(String filepath, int replicationDegree) {
-        StorageFile file = new StorageFile(this, filepath, replicationDegree);
-        this.filePathMap.put(file.getFileId(), filepath);
         try {
-            file.backup();
-        } catch (IOException e) {
-            e.printStackTrace();
+            StorageFile storageFile = new StorageFile(this, filepath, replicationDegree);
+            storageFile.backup();
+            this.fileMap.put(filepath, storageFile);
+        } catch (Exception e) {
+            System.out.printf("Can't backup file %s\n", filepath);
         }
     }
 
     @Override
-    public void delete(String filepath)   {
-        StorageFile file = new StorageFile(this, filepath, -1);
-        file.delete();
+    public void delete(String filepath) {
+        StorageFile storageFile = this.fileMap.get(filepath);
+        storageFile.delete();
+        this.fileMap.remove(filepath);
+
     }
 
     @Override
     public void restore(String filepath) throws RemoteException {
         System.out.println("Implement RESTORE");
     }
-
 
 
     @Override
