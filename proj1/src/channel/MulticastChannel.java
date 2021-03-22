@@ -9,9 +9,9 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class MulticastChannel extends MulticastSocket implements Runnable {
-    private InetAddress address;
-    private int port;
-    private Peer peer;
+    private final InetAddress address;
+    private final int port;
+    private final Peer peer;
 
     public MulticastChannel(String addressString, int port, Peer peer) throws IOException {
         // Create Socket
@@ -32,12 +32,10 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
 
             try {
                 this.receive(packet);
-                //System.out.println("Received packet with length " + packet.getLength());
 
                 Message message = Message.create(packet);
 
                 if(!message.messageOwner(this.peer.getId())){
-
                     message.submitTask(this.peer);
                 }
 
@@ -52,7 +50,6 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
 
         try {
             this.send(packet);
-            //System.out.println("Sent packet with length " + packet.getLength());
         } catch (IOException e) {
             e.printStackTrace();
         }

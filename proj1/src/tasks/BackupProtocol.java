@@ -6,8 +6,8 @@ import peer.Peer;
 import storage.Chunk;
 
 public class BackupProtocol implements Runnable {
-    private Peer peer;
-    private Chunk chunk;
+    private final Peer peer;
+    private final Chunk chunk;
 
     public BackupProtocol(Peer peer, Chunk chunk) {
         this.peer = peer;
@@ -23,7 +23,7 @@ public class BackupProtocol implements Runnable {
 
         Message putChunkMessage = new PutChunkMessage(this.peer, this.chunk);
 
-        // Try to send PUTCHUNK message max 5 times or until Replecation degree is meet
+        // Try to send PUTCHUNK message max 5 times or until Replication degree is met
         int attempt = 0;
         do {
             this.peer.sendBackupMessage(putChunkMessage);
