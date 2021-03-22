@@ -1,6 +1,9 @@
 package messages;
 
 import peer.Peer;
+import tasks.DeleteTask;
+import tasks.PutchunkTask;
+import tasks.Task;
 
 import java.nio.charset.StandardCharsets;
 
@@ -20,6 +23,7 @@ public class DeleteMessage extends Message{
 
     @Override
     public void submitTask(Peer peer) {
-
+        Task task = new DeleteTask(peer, this);
+        peer.submitControlThread(task);
     }
 }
