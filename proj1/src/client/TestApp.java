@@ -1,6 +1,7 @@
 package client;
 
 import peer.PeerInit;
+import storage.StorageFile;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -30,6 +31,8 @@ public class TestApp {
 
                     String filepath = args[2];
                     int replicationDeg = Integer.parseInt(args[3]);
+                    peer.backup(filepath,replicationDeg);
+
 
                     try {
                         peer.backup(filepath, replicationDeg);

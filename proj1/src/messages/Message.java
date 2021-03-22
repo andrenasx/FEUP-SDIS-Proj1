@@ -1,16 +1,20 @@
 package messages;
 
+
+
+import peer.Peer;
+
 import java.net.DatagramPacket;
 import java.util.Arrays;
 
-abstract class Message {
-    protected String protocolVersion;
+public abstract class Message {
+    public String protocolVersion;
     protected String messageType;
-    protected int senderId;
-    protected String fileId;
-    protected int chunkNo;
-    protected int replicationDeg;
-    protected byte[] body;
+    public int senderId;
+    public String fileId;
+    public int chunkNo;
+    public int replicationDeg;
+    public byte[] body;
 
     Message(String protocolVersion, String messageType, int senderId, String fileId, int chunkNo, int replicationDeg, byte[] body) {
         this.protocolVersion = protocolVersion;
@@ -21,6 +25,7 @@ abstract class Message {
         this.replicationDeg = replicationDeg;
         this.body = body;
     }
+
 
     public static Message create(DatagramPacket packet) throws Exception {
         String message = new String(packet.getData());
@@ -53,25 +58,34 @@ abstract class Message {
             case "PUTCHUNK":
                 chunkNo = Integer.parseInt(header[4]);
                 replicationDeg = Integer.parseInt(header[5]);
-                return new PUTCHUNK(protocolVersion, senderId, fileId, chunkNo, replicationDeg, body);
+                return new PutChunkMessage(protocolVersion, senderId, fileId, chunkNo, replicationDeg, body);
             case "STORED":
                 chunkNo = Integer.parseInt(header[4]);
-                return new STORED(protocolVersion, senderId, fileId, chunkNo);
+                return new StoredMessage(protocolVersion, senderId, fileId, chunkNo);
             case "GETCHUNK":
                 chunkNo = Integer.parseInt(header[4]);
-                return new GETCHUNK(protocolVersion, senderId, fileId, chunkNo);
+                return new GetChunkMessage(protocolVersion, senderId, fileId, chunkNo);
             case "CHUNK":
                 chunkNo = Integer.parseInt(header[4]);
-                return new CHUNK(protocolVersion, senderId, fileId, chunkNo, body);
+                return new ChunkMessage(protocolVersion, senderId, fileId, chunkNo, body);
             case "DELETE":
-                return new DELETE(protocolVersion, senderId, fileId);
+                return new DeleteMessage(protocolVersion, senderId, fileId);
             case "REMOVED":
                 chunkNo = Integer.parseInt(header[4]);
-                return new REMOVED(protocolVersion, senderId, fileId, chunkNo);
+                return new RemovedMessage(protocolVersion, senderId, fileId, chunkNo);
             default:
                 throw new Exception("Unknown message type");
         }
+
     }
 
     public abstract byte[] encode();
+
+    public abstract void submitTask(Peer peer);
+
+    public boolean messageOwner(int peerId){
+        return peerId==this.senderId;
+    }
+
+
 }
