@@ -41,7 +41,7 @@ public class PutchunkTask extends Task {
         // If received chunk still needs replication add it to peer map and acknowledge it
         if (chunk.needsReplication()) {
             // Check if peer has enough space to store chunk
-            if(!this.peer.getStorage().hasEnoughSpace(chunk.getSize())){
+            if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
                 System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
                 return;
             }

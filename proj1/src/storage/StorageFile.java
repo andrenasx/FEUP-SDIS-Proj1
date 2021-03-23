@@ -1,7 +1,7 @@
 package storage;
 
-import tasks.BackupProtocol;
 import peer.Peer;
+import tasks.BackupProtocol;
 import tasks.DeleteProtocol;
 import utils.Utils;
 
@@ -23,7 +23,7 @@ public class StorageFile {
         this.filePath = filePath;
         this.replicationDegree = replicationDegree;
 
-        this.fileId= Utils.createFileId(filePath);
+        this.fileId = Utils.createFileId(filePath);
     }
 
     public void backup() throws IOException {
@@ -33,7 +33,7 @@ public class StorageFile {
         int fileSize = (int) file.length();
         FileInputStream fileReader = new FileInputStream(file);
 
-        int i=0;
+        int i = 0;
         for (int bytesRead = 0; bytesRead < fileSize; i++) {
             byte[] data;
             if (fileSize - bytesRead >= CHUNK_SIZE) {
@@ -69,11 +69,10 @@ public class StorageFile {
     }
 
 
-    public void delete(){
-        DeleteProtocol delete = new DeleteProtocol(this.peer,this.fileId);
+    public void delete() {
+        DeleteProtocol delete = new DeleteProtocol(this.peer, this.fileId);
         this.peer.submitControlThread(delete);
     }
-
 
 
     public String getFilePath() {

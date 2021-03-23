@@ -1,7 +1,5 @@
 package messages;
 
-
-
 import peer.Peer;
 
 import java.net.DatagramPacket;
@@ -83,8 +81,8 @@ public abstract class Message {
 
     public abstract void submitTask(Peer peer);
 
-    public boolean messageOwner(int peerId){
-        return peerId==this.senderId;
+    public boolean messageOwner(int peerId) {
+        return peerId == this.senderId;
     }
 
 

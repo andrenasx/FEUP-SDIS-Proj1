@@ -1,7 +1,6 @@
 package client;
 
 import peer.PeerInit;
-import storage.StorageFile;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -9,7 +8,7 @@ import java.rmi.registry.Registry;
 
 public class TestApp {
     public static void main(String[] args) {
-        if(args.length < 2 || args.length > 4){
+        if (args.length < 2 || args.length > 4) {
             System.out.println("Usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>");
             return;
         }
@@ -24,14 +23,14 @@ public class TestApp {
 
             switch (protocol) {
                 case "BACKUP": {
-                    if(args.length != 4){
+                    if (args.length != 4) {
                         System.out.println("Usage: java TestApp <peer_ap> BACKUP <file_path> <replication_degree>");
                         return;
                     }
 
                     String filepath = args[2];
                     int replicationDeg = Integer.parseInt(args[3]);
-                    peer.backup(filepath,replicationDeg);
+                    peer.backup(filepath, replicationDeg);
 
                     break;
                 }

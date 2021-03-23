@@ -11,9 +11,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
-    public static final int CRLF=0xDA;
+    public static final int CRLF = 0xDA;
 
-    public static void sleepRandom(){
+    public static void sleepRandom() {
         try {
             int sleepFor = ThreadLocalRandom.current().nextInt(0, 401);
             Thread.sleep(sleepFor);
@@ -22,14 +22,13 @@ public class Utils {
         }
     }
 
-
     public static String createFileId(String filePath) throws IOException, NoSuchAlgorithmException {
         // Create string from file metadata
         String bitstring = filePath;
-        String fileId=null;
+        String fileId = null;
 
         BasicFileAttributes metadata = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class);
-        bitstring =filePath + metadata.creationTime() + metadata.lastModifiedTime() + metadata.size();
+        bitstring = filePath + metadata.creationTime() + metadata.lastModifiedTime() + metadata.size();
 
         // Apply SHA256 to the string
         MessageDigest digest = MessageDigest.getInstance("SHA-256");

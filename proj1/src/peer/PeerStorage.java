@@ -59,13 +59,13 @@ public class PeerStorage implements Serializable {
     private double getUsedSpace() {
         double used = 0;
         for (Chunk chunk : this.storedChunks.values()) {
-                used += chunk.getSize();
+            used += chunk.getSize();
         }
         return used;
     }
 
     public boolean hasEnoughSpace(double chunkSize) {
-        return this.getUsedSpace()+chunkSize <= this.storageCapacity;
+        return this.getUsedSpace() + chunkSize <= this.storageCapacity;
     }
 
     public void addStoredChunk(String chunkId, Chunk chunk) {

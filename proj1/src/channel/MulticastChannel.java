@@ -19,7 +19,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
 
         this.address = InetAddress.getByName(addressString);
         this.port = port;
-        this.peer=peer;
+        this.peer = peer;
         this.setTimeToLive(1);
         this.joinGroup(this.address);
     }
@@ -35,7 +35,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
 
                 Message message = Message.create(packet);
 
-                if(!message.messageOwner(this.peer.getId())){
+                if (!message.messageOwner(this.peer.getId())) {
                     message.submitTask(this.peer);
                 }
 
@@ -45,7 +45,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
         }
     }
 
-    public void sendMessage(byte[] message){
+    public void sendMessage(byte[] message) {
         DatagramPacket packet = new DatagramPacket(message, message.length, this.address, this.port);
 
         try {

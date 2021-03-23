@@ -4,7 +4,7 @@ import messages.DeleteMessage;
 import messages.Message;
 import peer.Peer;
 
-public class DeleteProtocol implements Runnable{
+public class DeleteProtocol implements Runnable {
     private final Peer peer;
     private final String fileId;
 
@@ -20,7 +20,7 @@ public class DeleteProtocol implements Runnable{
         int attempt = 0;
         do {
             this.peer.sendControlMessage(deleteMessage);
-            System.out.println("Sent DELETE" );
+            System.out.println("Sent DELETE");
             int wait = (int) Math.pow(2, attempt) * 1000;
 
             try {

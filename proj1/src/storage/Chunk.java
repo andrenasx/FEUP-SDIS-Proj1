@@ -19,7 +19,7 @@ public class Chunk implements Serializable {
 
     public Chunk(Message message) {
         this(message.fileId, message.chunkNo, message.replicationDeg, null);
-        if(message.body != null) this.size = message.body.length/1000.0;
+        if (message.body != null) this.size = message.body.length / 1000.0;
     }
 
     public Chunk(String fileId, int chunkNo, int replicationDegree, byte[] body) {
@@ -28,7 +28,7 @@ public class Chunk implements Serializable {
         this.id = fileId + "_" + chunkNo;
         this.replicationDegree = replicationDegree;
         this.body = body;
-        if(body != null) this.size = body.length/1000.0;
+        if (body != null) this.size = body.length / 1000.0;
     }
 
     public void addPeerAck(int peerId) {

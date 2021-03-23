@@ -1,19 +1,19 @@
 package messages;
 
-import tasks.PutchunkTask;
-import tasks.Task;
 import peer.Peer;
 import storage.Chunk;
+import tasks.PutchunkTask;
+import tasks.Task;
 
 import java.nio.charset.StandardCharsets;
 
-public class PutChunkMessage extends Message{
+public class PutChunkMessage extends Message {
     public PutChunkMessage(String protocolVersion, int senderId, String fileId, int chunkNo, int replicationDeg, byte[] body) {
         super(protocolVersion, "PUTCHUNK", senderId, fileId, chunkNo, replicationDeg, body);
     }
 
-    public PutChunkMessage(Peer peer, Chunk chunk){
-        super(peer.getProtocolVersion(),"PUTCHUNK",peer.getId(), chunk.getFileId(),chunk.getChunkNo(),chunk.getDesiredReplicationDegree(),chunk.getBody());
+    public PutChunkMessage(Peer peer, Chunk chunk) {
+        super(peer.getProtocolVersion(), "PUTCHUNK", peer.getId(), chunk.getFileId(), chunk.getChunkNo(), chunk.getDesiredReplicationDegree(), chunk.getBody());
 
     }
 

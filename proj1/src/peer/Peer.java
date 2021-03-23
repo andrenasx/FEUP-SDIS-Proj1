@@ -9,7 +9,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -135,7 +134,7 @@ public class Peer implements PeerInit {
     @Override
     public void delete(String filepath) {
         StorageFile storageFile = this.storage.getFileMap().get(filepath);
-        if(storageFile == null) {
+        if (storageFile == null) {
             System.out.println("Can't delete file " + filepath + ", not found");
             return;
         }
