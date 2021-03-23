@@ -19,12 +19,12 @@ public class PutchunkTask extends Task {
 
         Chunk chunk;
         // If peer does not have received chunk add it to peer StoredChunk map
-        if (!this.peer.hasStoredChunk(this.message.fileId, this.message.chunkNo)) {
+        if (!this.peer.getStorage().hasStoredChunk(this.message.fileId, this.message.chunkNo)) {
             chunk = new Chunk(this.message);
-            this.peer.addStoredChunk(chunk.getUniqueId(), chunk);
+            this.peer.getStorage().addStoredChunk(chunk.getUniqueId(), chunk);
         }
         else {
-            chunk = this.peer.getStoredChunk(this.message.fileId, this.message.chunkNo);
+            chunk = this.peer.getStorage().getStoredChunk(this.message.fileId, this.message.chunkNo);
 
             // If peer has current chunk stored (in map and acknowledged) send STORED message
             if (chunk.isStoredLocally()) {
@@ -40,12 +40,19 @@ public class PutchunkTask extends Task {
 
         // If received chunk still needs replication add it to peer map and acknowledge it
         if (chunk.needsReplication()) {
-            chunk.setStoredLocally(true);
-            chunk.addPeerAck(this.peer.getId());
+            // Check if peer has enough space to store chunk
+            if(!this.peer.getStorage().hasEnoughSpace(chunk.getSize())){
+                System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
+                return;
+            }
 
             try {
                 // Store chunk in file
-                this.peer.storeChunk(chunk, this.message.body);
+                this.peer.getStorage().storeChunk(chunk, this.message.body);
+
+                // Acknowledge that chunk is stored and add it to peer ack Set
+                chunk.setStoredLocally(true);
+                chunk.addPeerAck(this.peer.getId());
 
                 // Send stored message
                 StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
@@ -57,7 +64,7 @@ public class PutchunkTask extends Task {
         }
         // Else if already replicated remove from peer map
         else {
-            this.peer.removeStoredChunk(chunk.getUniqueId());
+            this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
             //System.out.println(String.format("Chunk No: %d of file: %s is already completely replicated", c.getChunkNo(), c.getFileId()));
         }
     }

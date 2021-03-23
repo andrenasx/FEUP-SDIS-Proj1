@@ -13,7 +13,7 @@ public class PutChunkMessage extends Message{
     }
 
     public PutChunkMessage(Peer peer, Chunk chunk){
-        super(peer.getProtocolVersion(),"PUTCHUNK",peer.getId(), chunk.getFileId(),chunk.getChunkNo(),chunk.getReplicationDegree(),chunk.getBody());
+        super(peer.getProtocolVersion(),"PUTCHUNK",peer.getId(), chunk.getFileId(),chunk.getChunkNo(),chunk.getDesiredReplicationDegree(),chunk.getBody());
 
     }
 

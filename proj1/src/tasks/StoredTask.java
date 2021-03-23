@@ -14,13 +14,13 @@ public class StoredTask extends Task {
         Chunk chunk;
 
         // Add peer acknowledge to received STORED messages
-        if(this.peer.hasStoredChunk(this.message.fileId,this.message.chunkNo) ) {
-            chunk = this.peer.getStoredChunk(this.message.fileId,this.message.chunkNo);
+        if(this.peer.getStorage().hasStoredChunk(this.message.fileId,this.message.chunkNo) ) {
+            chunk = this.peer.getStorage().getStoredChunk(this.message.fileId,this.message.chunkNo);
             chunk.addPeerAck(this.message.senderId);
             //System.out.println(String.format("Received STORED from peer %d chunk %d of file %s",this.message.senderId,c.getChunkNo(),c.getFileId()));
         }
-        else if(this.peer.hasSentChunk(this.message.fileId,this.message.chunkNo)){
-            chunk = this.peer.getSentChunk(this.message.fileId,this.message.chunkNo);
+        else if(this.peer.getStorage().hasSentChunk(this.message.fileId,this.message.chunkNo)){
+            chunk = this.peer.getStorage().getSentChunk(this.message.fileId,this.message.chunkNo);
             chunk.addPeerAck(this.message.senderId);
             //System.out.println(String.format("Received STORED from peer %d chunk %d of file %s",this.message.senderId,c.getChunkNo(),c.getFileId()));
         }
