@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 public class DeleteMessage extends Message{
     public DeleteMessage(String protocolVersion, int senderId, String fileId) {
-        super(protocolVersion, "DELETE", senderId, fileId, -1, 0, new byte[0]);
+        super(protocolVersion, "DELETE", senderId, fileId, -1, 0, null);
     }
 
     @Override
