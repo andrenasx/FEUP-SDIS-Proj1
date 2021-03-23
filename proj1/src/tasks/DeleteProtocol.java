@@ -31,6 +31,6 @@ public class DeleteProtocol implements Runnable{
             attempt++;
         } while (attempt < Task.MAX_ATTEMPTS);
 
-        this.peer.deleteSentChunks(this.fileId);
+        this.peer.getState().deleteSentChunks(this.fileId);
     }
 }

@@ -27,6 +27,8 @@ public class Peer implements PeerInit {
     private final String protocolVersion;
     private final String serviceAccessPoint; // remoteObjectName since we will be using RMI
 
+    private final PeerState state;
+
     // Multicast Channels
     private final MulticastChannel mcChannel; // Control Channel
     private final MulticastChannel mdbChannel; // Data Backup Channel
@@ -39,30 +41,22 @@ public class Peer implements PeerInit {
     public static int MAX_THREADS = 16;
     public static int MAX_THREADS_C = 128;
 
-    private final ConcurrentHashMap<String, Chunk> storedChunks;
-    private final ConcurrentHashMap<String, Chunk> sentChunks;
-    private final ConcurrentHashMap<String, StorageFile> fileMap;
-    private final String storagePath;
-
     public Peer(String[] args) throws IOException {
         this.protocolVersion = args[0];
         this.id = Integer.parseInt(args[1]);
         this.serviceAccessPoint = args[2];
-        this.storedChunks = new ConcurrentHashMap<>();
-        this.sentChunks = new ConcurrentHashMap<>();
-        this.fileMap = new ConcurrentHashMap<>();
+
+        // Create Peer Internal State
+        state = new PeerState(this.id);
 
         // Create Channels
         mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);
         mdbChannel = new MulticastChannel(args[5], Integer.parseInt(args[6]), this);
         mdrChannel = new MulticastChannel(args[7], Integer.parseInt(args[8]), this);
 
-
         this.threadPoolMC = Executors.newFixedThreadPool(MAX_THREADS_C);
         this.threadPoolMDB = Executors.newFixedThreadPool(MAX_THREADS);
         this.threadPoolMDR = Executors.newFixedThreadPool(MAX_THREADS);
-
-        this.storagePath = "../assets/Peer" + this.id + "/";
     }
 
 
@@ -86,51 +80,6 @@ public class Peer implements PeerInit {
         (new Thread(peer.mcChannel)).start();
         (new Thread(peer.mdbChannel)).start();
         (new Thread(peer.mdrChannel)).start();
-    }
-
-    public void addStoredChunk(String chunkId, Chunk chunk) {
-        this.storedChunks.put(chunkId, chunk);
-    }
-
-    public void removeStoredChunk(String chunkUniqueId) {
-        this.storedChunks.remove(chunkUniqueId);
-    }
-
-    public void addSentChunk(Chunk chunk) {
-        this.sentChunks.put(chunk.getUniqueId(), chunk);
-    }
-
-    public Chunk getStoredChunk(String chunkId) {
-        return this.storedChunks.get(chunkId);
-    }
-
-    public Chunk getStoredChunk(String fileId, int chunkId) {
-        return this.storedChunks.get(fileId + "_" + chunkId);
-    }
-
-    public Chunk getSentChunk(String chunkId) {
-        return this.sentChunks.get(chunkId);
-    }
-
-    public Chunk getSentChunk(String fileId, int chunkId) {
-        return this.sentChunks.get(fileId + "_" + chunkId);
-    }
-
-
-    public boolean hasStoredChunk(String fileId, int chunkId) {
-        return this.storedChunks.containsKey(fileId + "_" + chunkId);
-    }
-
-    public boolean hasStoredChunk(String uniqueId) {
-        return this.storedChunks.containsKey(uniqueId);
-    }
-
-    public boolean hasSentChunk(String fileId, int chunkId) {
-        return this.sentChunks.containsKey(fileId + "_" + chunkId);
-    }
-
-    public boolean hasSentChunk(String uniqueId) {
-        return this.sentChunks.containsKey(uniqueId);
     }
 
     public void submitControlThread(Runnable action) {
@@ -165,39 +114,9 @@ public class Peer implements PeerInit {
         return this.id;
     }
 
-    public ConcurrentHashMap<String, Chunk> getStoredChunks() {
-        return this.storedChunks;
+    public PeerState getState() {
+        return this.state;
     }
-
-
-    public void storeChunk(Chunk chunk, byte[] body) throws IOException {
-        Path path = Paths.get(this.storagePath + chunk.getUniqueId());
-        Files.createDirectories(path.getParent());
-
-        FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
-        out.write(body);
-        out.close();
-
-        System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
-    }
-
-    public void deleteChunk(Chunk chunk) {
-        System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
-        File file = new File(this.storagePath + chunk.getUniqueId());
-        if (file.delete()) {
-            System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
-            this.storedChunks.remove(chunk.getUniqueId());
-        }
-    }
-
-    public void deleteSentChunks(String fileId) {
-        for (Chunk chunk : this.storedChunks.values()) {
-            if (chunk.getFileId().equals(fileId)) {
-                this.storedChunks.remove(chunk.getUniqueId());
-            }
-        }
-    }
-
 
     @Override
     public String toString() {
@@ -216,25 +135,27 @@ public class Peer implements PeerInit {
         try {
             StorageFile storageFile = new StorageFile(this, filepath, replicationDegree);
             storageFile.backup();
-            this.fileMap.put(filepath, storageFile);
+            this.state.getFileMap().put(filepath, storageFile);
         } catch (Exception e) {
-            System.out.printf("Can't backup file %s\n", filepath);
+            System.out.println("Can't backup file " + filepath);
         }
     }
 
     @Override
     public void delete(String filepath) {
-        StorageFile storageFile = this.fileMap.get(filepath);
+        StorageFile storageFile = this.state.getFileMap().get(filepath);
+        if(storageFile == null) {
+            System.out.println("Can't delete file " + filepath + ", not found");
+            return;
+        }
         storageFile.delete();
-        this.fileMap.remove(filepath);
-
+        this.state.getFileMap().remove(filepath);
     }
 
     @Override
     public void restore(String filepath) throws RemoteException {
         System.out.println("Implement RESTORE");
     }
-
 
     @Override
     public void reclaim(int diskspace) throws RemoteException {
@@ -243,7 +164,6 @@ public class Peer implements PeerInit {
 
     @Override
     public String state() throws RemoteException {
-        System.out.println("Implement STATE");
-        return "IMPLEMENT IT";
+        return this.state.toString();
     }
 }

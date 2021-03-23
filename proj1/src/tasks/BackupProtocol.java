@@ -17,8 +17,8 @@ public class BackupProtocol implements Runnable {
     @Override
     public void run() {
         // Add chunk to sent chunk map
-        if (!this.peer.hasSentChunk(this.chunk.getUniqueId())) {
-            this.peer.addSentChunk(this.chunk);
+        if (!this.peer.getState().hasSentChunk(this.chunk.getUniqueId())) {
+            this.peer.getState().addSentChunk(this.chunk);
         }
 
         Message putChunkMessage = new PutChunkMessage(this.peer, this.chunk);

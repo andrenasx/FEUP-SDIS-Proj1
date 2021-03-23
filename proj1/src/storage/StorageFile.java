@@ -8,12 +8,6 @@ import utils.Utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 
@@ -52,7 +46,7 @@ public class StorageFile {
             }
 
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
-            this.peer.addSentChunk(chunk);
+            this.peer.getState().addSentChunk(chunk);
 
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);
@@ -63,7 +57,7 @@ public class StorageFile {
         // If the file size is a multiple of the chunk size, the last chunk has size 0
         if (fileSize % CHUNK_SIZE == 0) {
             Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
-            this.peer.addSentChunk(chunk);
+            this.peer.getState().addSentChunk(chunk);
 
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);

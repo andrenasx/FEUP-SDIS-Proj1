@@ -19,10 +19,10 @@ public class DeleteTask extends Task{
     @Override
     public void run() {
         System.out.printf("Received DELETE for file %s\n", this.message.fileId);
-        ConcurrentHashMap<String, Chunk> chunks = this.peer.getStoredChunks();
+        ConcurrentHashMap<String, Chunk> chunks = this.peer.getState().getStoredChunks();
         for(Chunk chunk: chunks.values()){
             if(chunk.getFileId().equals(this.message.fileId)){
-                this.peer.deleteChunk(chunk);
+                this.peer.getState().deleteChunk(chunk);
             }
         }
     }
