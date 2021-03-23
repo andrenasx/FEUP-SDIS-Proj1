@@ -2,23 +2,14 @@ package peer;
 
 import channel.MulticastChannel;
 import messages.Message;
-import storage.Chunk;
 import storage.StorageFile;
-import utils.Utils;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,7 +18,7 @@ public class Peer implements PeerInit {
     private final String protocolVersion;
     private final String serviceAccessPoint; // remoteObjectName since we will be using RMI
 
-    private final PeerState state;
+    private final PeerStorage storage;
 
     // Multicast Channels
     private final MulticastChannel mcChannel; // Control Channel
@@ -47,7 +38,7 @@ public class Peer implements PeerInit {
         this.serviceAccessPoint = args[2];
 
         // Create Peer Internal State
-        state = new PeerState(this.id);
+        storage = new PeerStorage(this.id);
 
         // Create Channels
         mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);
@@ -114,8 +105,8 @@ public class Peer implements PeerInit {
         return this.id;
     }
 
-    public PeerState getState() {
-        return this.state;
+    public PeerStorage getStorage() {
+        return this.storage;
     }
 
     @Override
@@ -135,7 +126,7 @@ public class Peer implements PeerInit {
         try {
             StorageFile storageFile = new StorageFile(this, filepath, replicationDegree);
             storageFile.backup();
-            this.state.getFileMap().put(filepath, storageFile);
+            this.storage.getFileMap().put(filepath, storageFile);
         } catch (Exception e) {
             System.out.println("Can't backup file " + filepath);
         }
@@ -143,13 +134,13 @@ public class Peer implements PeerInit {
 
     @Override
     public void delete(String filepath) {
-        StorageFile storageFile = this.state.getFileMap().get(filepath);
+        StorageFile storageFile = this.storage.getFileMap().get(filepath);
         if(storageFile == null) {
             System.out.println("Can't delete file " + filepath + ", not found");
             return;
         }
         storageFile.delete();
-        this.state.getFileMap().remove(filepath);
+        this.storage.getFileMap().remove(filepath);
     }
 
     @Override
@@ -164,6 +155,6 @@ public class Peer implements PeerInit {
 
     @Override
     public String state() throws RemoteException {
-        return this.state.toString();
+        return this.storage.toString();
     }
 }

@@ -46,7 +46,7 @@ public class StorageFile {
             }
 
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
-            this.peer.getState().addSentChunk(chunk);
+            this.peer.getStorage().addSentChunk(chunk);
 
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);
@@ -57,7 +57,7 @@ public class StorageFile {
         // If the file size is a multiple of the chunk size, the last chunk has size 0
         if (fileSize % CHUNK_SIZE == 0) {
             Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
-            this.peer.getState().addSentChunk(chunk);
+            this.peer.getStorage().addSentChunk(chunk);
 
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);

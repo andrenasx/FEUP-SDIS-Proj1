@@ -12,13 +12,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PeerState implements Serializable {
+public class PeerStorage implements Serializable {
+    private final int storageCapacity;
     private final ConcurrentHashMap<String, Chunk> storedChunks;
     private final ConcurrentHashMap<String, Chunk> sentChunks;
     private final ConcurrentHashMap<String, StorageFile> fileMap;
     private final String storagePath;
 
-    public PeerState(int id) {
+    public PeerStorage(int id) {
+        this.storageCapacity = 100000; // 100000 KB
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
         this.fileMap = new ConcurrentHashMap<>();
@@ -52,6 +54,18 @@ public class PeerState implements Serializable {
                 this.storedChunks.remove(chunk.getUniqueId());
             }
         }
+    }
+
+    private double getUsedSpace() {
+        double used = 0;
+        for (Chunk chunk : this.storedChunks.values()) {
+                used += chunk.getSize();
+        }
+        return used;
+    }
+
+    public boolean hasEnoughSpace(double chunkSize) {
+        return this.getUsedSpace()+chunkSize <= this.storageCapacity;
     }
 
     public void addStoredChunk(String chunkId, Chunk chunk) {
@@ -110,6 +124,10 @@ public class PeerState implements Serializable {
         return fileMap;
     }
 
+    public int getStorageCapacity() {
+        return storageCapacity;
+    }
+
     public String getStoragePath() {
         return storagePath;
     }
@@ -139,6 +157,10 @@ public class PeerState implements Serializable {
         for (Chunk chunk : this.storedChunks.values()) {
             sb.append(chunk.toStringStored()).append("\n");
         }
+
+        sb.append("\n---Storage---\n")
+                .append("\tMaximum capacity: ").append(this.storageCapacity).append(" KBytes\n")
+                .append("\tUsed space: ").append(this.getUsedSpace()).append(" KBytes\n");
 
         return sb.toString();
     }
