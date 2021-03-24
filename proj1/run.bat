@@ -1,6 +1,8 @@
+start cmd /k java -jar McastSnooper.jar 224.0.0.15:8001 224.0.0.16:8002 224.0.0.17:8003
+
 cd src
 
-javac channel/*.java client/*.java messages/*.java peer/*.java storage/*.java
+javac channel/*.java client/*.java messages/*.java peer/*.java protocol/*.java storage/*.java tasks/*.java utils/*.java
 
 start rmiregistry
 
