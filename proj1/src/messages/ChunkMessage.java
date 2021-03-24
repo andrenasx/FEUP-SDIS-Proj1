@@ -33,6 +33,6 @@ public class ChunkMessage extends Message {
     @Override
     public void submitTask(Peer peer) {
         ChunkTask task = new ChunkTask(peer, this);
-        peer.submitControlThread(task);
+        peer.submitRestoreThread(task);
     }
 }

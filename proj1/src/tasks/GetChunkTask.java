@@ -15,6 +15,8 @@ public class GetChunkTask extends Task {
 
     @Override
     public void run() {
+        System.out.println("Received GETCHUNK from " + message.senderId + " for chunk no " + message.chunkNo);
+
         String chunkId = this.message.fileId + "_" + this.message.chunkNo;
         Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.fileId + "_" + this.message.chunkNo);
 
