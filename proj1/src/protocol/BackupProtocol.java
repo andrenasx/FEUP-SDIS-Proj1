@@ -1,9 +1,9 @@
-package tasks;
+package protocol;
 
-import messages.Message;
 import messages.PutChunkMessage;
 import peer.Peer;
 import storage.Chunk;
+import tasks.Task;
 
 public class BackupProtocol implements Runnable {
     private final Peer peer;
@@ -21,7 +21,7 @@ public class BackupProtocol implements Runnable {
             this.peer.getStorage().addSentChunk(this.chunk);
         }
 
-        Message putChunkMessage = new PutChunkMessage(this.peer, this.chunk);
+        PutChunkMessage putChunkMessage = new PutChunkMessage(this.peer, this.chunk);
 
         // Try to send PUTCHUNK message max 5 times or until Replication degree is met
         int attempt = 0;
@@ -36,8 +36,7 @@ public class BackupProtocol implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            attempt++;
-        } while (attempt < Task.MAX_ATTEMPTS && this.chunk.needsReplication());
+        } while (++attempt < Task.MAX_ATTEMPTS && this.chunk.needsReplication());
 
         this.chunk.clearBody();
     }

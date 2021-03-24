@@ -40,8 +40,7 @@ public class PutChunkMessage extends Message {
 
     @Override
     public void submitTask(Peer peer) {
-        Task task = new PutchunkTask(peer, this);
+        PutchunkTask task = new PutchunkTask(peer, this);
         peer.submitBackupThread(task);
-
     }
 }

@@ -2,6 +2,7 @@ package peer;
 
 import channel.MulticastChannel;
 import messages.Message;
+import storage.Chunk;
 import storage.StorageFile;
 
 import java.io.IOException;
@@ -9,8 +10,10 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Peer implements PeerInit {
     private final int id;
@@ -80,8 +83,8 @@ public class Peer implements PeerInit {
         this.threadPoolMDB.submit(action);
     }
 
-    public void submitRestoreThread(Runnable action) {
-        this.threadPoolMDR.submit(action);
+    public Future<Chunk> submitRestoreThread(Callable<Chunk> action) {
+        return this.threadPoolMDR.submit(action);
     }
 
     public void sendControlMessage(Message message) {
@@ -144,7 +147,17 @@ public class Peer implements PeerInit {
 
     @Override
     public void restore(String filepath) throws RemoteException {
-        System.out.println("Implement RESTORE");
+        StorageFile storageFile = this.storage.getFileMap().get(filepath);
+        if (storageFile == null) {
+            System.out.println("Can't restore file " + filepath + ", not found");
+            return;
+        }
+
+        try {
+            storageFile.restore();
+        } catch (Exception e) {
+            System.out.println("Error restoring file " + filepath);
+        }
     }
 
     @Override

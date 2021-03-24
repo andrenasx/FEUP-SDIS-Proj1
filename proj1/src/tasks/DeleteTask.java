@@ -1,13 +1,13 @@
 package tasks;
 
-import messages.Message;
+import messages.DeleteMessage;
 import peer.Peer;
 import storage.Chunk;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DeleteTask extends Task {
-    public DeleteTask(Peer peer, Message message) {
+    public DeleteTask(Peer peer, DeleteMessage message) {
         super(peer, message);
     }
 

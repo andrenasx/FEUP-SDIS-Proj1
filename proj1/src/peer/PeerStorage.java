@@ -3,10 +3,7 @@ package peer;
 import storage.Chunk;
 import storage.StorageFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +34,16 @@ public class PeerStorage implements Serializable {
         out.close();
 
         System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
+    }
+
+    public byte[] restoreChunk(String chunkId) throws IOException {
+        File file = new File(this.storagePath + chunkId);
+        int fileSize = (int) file.length();
+        FileInputStream fileReader = new FileInputStream(file);
+
+        byte[] body = new byte[fileSize];
+        fileReader.read(body, 0, fileSize);
+        return body;
     }
 
     public void deleteChunk(Chunk chunk) {
@@ -84,8 +91,8 @@ public class PeerStorage implements Serializable {
         return this.storedChunks.get(chunkId);
     }
 
-    public Chunk getStoredChunk(String fileId, int chunkId) {
-        return this.storedChunks.get(fileId + "_" + chunkId);
+    public Chunk getStoredChunk(String fileId, int chunkNo) {
+        return this.storedChunks.get(fileId + "_" + chunkNo);
     }
 
     public Chunk getSentChunk(String chunkId) {

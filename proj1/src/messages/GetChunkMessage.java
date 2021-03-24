@@ -1,6 +1,7 @@
 package messages;
 
 import peer.Peer;
+import tasks.GetChunkTask;
 
 import java.nio.charset.StandardCharsets;
 
@@ -21,6 +22,7 @@ public class GetChunkMessage extends Message {
 
     @Override
     public void submitTask(Peer peer) {
-
+        GetChunkTask task = new GetChunkTask(peer, this);
+        peer.submitControlThread(task);
     }
 }

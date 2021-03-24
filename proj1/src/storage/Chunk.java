@@ -16,6 +16,7 @@ public class Chunk implements Serializable {
     private final Set<Integer> peersAcks = ConcurrentHashMap.newKeySet();
 
     private boolean storedLocally = false;
+    private boolean sent = false;
 
     public Chunk(Message message) {
         this(message.fileId, message.chunkNo, message.replicationDeg, null);
@@ -63,6 +64,10 @@ public class Chunk implements Serializable {
         return replicationDegree;
     }
 
+    public void setBody(byte[] body) {
+        this.body = body;
+    }
+
     public byte[] getBody() {
         return body;
     }
@@ -77,6 +82,14 @@ public class Chunk implements Serializable {
 
     public void setStoredLocally(boolean storedLocally) {
         this.storedLocally = storedLocally;
+    }
+
+    public boolean getSent() {
+        return this.sent;
+    }
+
+    public void setSent(boolean sent) {
+        this.sent = sent;
     }
 
     @Override

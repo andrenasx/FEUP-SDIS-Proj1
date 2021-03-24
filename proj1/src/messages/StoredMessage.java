@@ -2,7 +2,6 @@ package messages;
 
 import peer.Peer;
 import tasks.StoredTask;
-import tasks.Task;
 
 import java.nio.charset.StandardCharsets;
 
@@ -23,8 +22,7 @@ public class StoredMessage extends Message {
 
     @Override
     public void submitTask(Peer peer) {
-
-        Task task = new StoredTask(peer, this);
+        StoredTask task = new StoredTask(peer, this);
         peer.submitControlThread(task);
     }
 }

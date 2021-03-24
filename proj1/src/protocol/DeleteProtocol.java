@@ -1,8 +1,8 @@
-package tasks;
+package protocol;
 
 import messages.DeleteMessage;
-import messages.Message;
 import peer.Peer;
+import tasks.Task;
 
 public class DeleteProtocol implements Runnable {
     private final Peer peer;
@@ -15,7 +15,7 @@ public class DeleteProtocol implements Runnable {
 
     @Override
     public void run() {
-        Message deleteMessage = new DeleteMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.fileId);
+        DeleteMessage deleteMessage = new DeleteMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.fileId);
         // Try to send DELETE message max 5 times
         int attempt = 0;
         do {
@@ -28,8 +28,7 @@ public class DeleteProtocol implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            attempt++;
-        } while (attempt < Task.MAX_ATTEMPTS);
+        } while (++attempt < Task.MAX_ATTEMPTS);
 
         this.peer.getStorage().deleteSentChunks(this.fileId);
     }
