@@ -92,7 +92,7 @@ public class StorageFile {
         for (Map.Entry<String, Chunk> entry : sentChunks.entrySet()) {
             if (Utils.isChunkFromFile(this.fileId, entry.getKey())) {
                 RestoreProtocol rp = new RestoreProtocol(this.peer, entry.getValue());
-                receivedChunks.add(this.peer.submitRestoreThread(rp));
+                receivedChunks.add(this.peer.submitControlThread(rp));
             }
         }
 

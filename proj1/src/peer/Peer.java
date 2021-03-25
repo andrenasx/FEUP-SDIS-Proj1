@@ -79,16 +79,16 @@ public class Peer implements PeerInit {
         this.threadPoolMC.submit(action);
     }
 
+    public Future<Chunk>  submitControlThread(Callable<Chunk> action) {
+        return this.threadPoolMC.submit(action);
+    }
+
     public void submitBackupThread(Runnable action) {
         this.threadPoolMDB.submit(action);
     }
 
     public void submitRestoreThread(Runnable action) {
         this.threadPoolMDR.submit(action);
-    }
-
-    public Future<Chunk> submitRestoreThread(Callable<Chunk> action) {
-        return this.threadPoolMDR.submit(action);
     }
 
     public void sendControlMessage(Message message) {
