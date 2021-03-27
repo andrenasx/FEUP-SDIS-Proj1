@@ -11,7 +11,7 @@ public class ChunkTask extends Task {
 
     @Override
     public void run() {
-        // If it is a stored chunk and CHUNK message was sent by another peer, acknowledge it so we don't send more CHUNK messages for that chunk
+        // If it is a stored chunk and CHUNK message was sent by another peer, acknowledge it (set sent to true) so we don't send more CHUNK messages for that chunk
         if (this.peer.getStorage().hasStoredChunk(this.message.fileId, this.message.chunkNo)) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.fileId, this.message.chunkNo);
             chunk.setSent(true);

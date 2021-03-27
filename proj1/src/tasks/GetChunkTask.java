@@ -17,21 +17,26 @@ public class GetChunkTask extends Task {
     public void run() {
         System.out.println("Received GETCHUNK from " + message.senderId + " for chunk no " + message.chunkNo);
 
+        // Get corresponding stored chunk
         String chunkId = this.message.fileId + "_" + this.message.chunkNo;
         Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.fileId + "_" + this.message.chunkNo);
 
+        // Abort if peer does not have chunk stored
         if (chunk == null || !chunk.isStoredLocally()) {
             System.out.println("Don't have chunk, id: " + chunkId);
             return;
         }
 
+        // Set sent flag to false, flag is set true when another peers sends this chunk
         chunk.setSent(false);
 
         Utils.sleepRandom();
 
+        // Send this chunk if no other peer sent this chunk before me
         if (!chunk.getSent()) {
             try {
-                byte[] body = this.peer.getStorage().restoreChunk(chunkId);
+                // Get chunk body and send CHUNK message
+                byte[] body = this.peer.getStorage().restoreChunkBody(chunkId);
 
                 ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.fileId, this.message.chunkNo, body);
                 this.peer.sendRestoreMessage(chunkMessage);

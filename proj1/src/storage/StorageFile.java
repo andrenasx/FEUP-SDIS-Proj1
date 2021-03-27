@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
@@ -88,14 +87,14 @@ public class StorageFile {
     public void restore() throws Exception {
         List<Future<Chunk>> receivedChunks = new ArrayList<>();
 
+        // Create a restore worker for each chunk of the file
         ConcurrentHashMap<String, Chunk> sentChunks = this.peer.getStorage().getSentChunks();
-        for (Map.Entry<String, Chunk> entry : sentChunks.entrySet()) {
-            if (Utils.isChunkFromFile(this.fileId, entry.getKey())) {
-                RestoreProtocol rp = new RestoreProtocol(this.peer, entry.getValue());
+        for (Chunk chunk : sentChunks.values()) {
+            if (chunk.getFileId().equals(this.fileId)) {
+                RestoreProtocol rp = new RestoreProtocol(this.peer, chunk);
                 receivedChunks.add(this.peer.submitControlThread(rp));
             }
         }
-
 
         // Create restored file path
         File file = new File(this.filePath);
