@@ -120,8 +120,12 @@ public class StorageFile {
                 return;
             }
 
+            // Write body to respective position offset in file
             ByteBuffer buffer = ByteBuffer.wrap(chunk.getBody());
             channel.write(buffer, (long) CHUNK_SIZE * chunk.getChunkNo());
+
+            // Clear Chunk body so we don't waste memory
+            chunk.clearBody();
         }
 
         channel.close();

@@ -42,7 +42,9 @@ public class PeerStorage implements Serializable {
         FileInputStream fileReader = new FileInputStream(file);
 
         byte[] body = new byte[fileSize];
-        fileReader.read(body, 0, fileSize);
+        fileReader.read(body, 0, fileSize); //TODO Add verification to bytes read
+
+        fileReader.close();
         return body;
     }
 
