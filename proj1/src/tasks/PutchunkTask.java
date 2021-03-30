@@ -1,6 +1,6 @@
 package tasks;
 
-import messages.Message;
+import messages.PutChunkMessage;
 import messages.StoredMessage;
 import peer.Peer;
 import storage.Chunk;
@@ -9,7 +9,7 @@ import utils.Utils;
 import java.io.IOException;
 
 public class PutchunkTask extends Task {
-    public PutchunkTask(Peer peer, Message message) {
+    public PutchunkTask(Peer peer, PutChunkMessage message) {
         super(peer, message);
     }
 

@@ -1,24 +1,34 @@
 package storage;
 
 import peer.Peer;
-import tasks.BackupProtocol;
-import tasks.DeleteProtocol;
+import protocol.BackupProtocol;
+import protocol.DeleteProtocol;
+import protocol.RestoreProtocol;
 import utils.Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 
 public class StorageFile {
     private final Peer peer;
     private final String filePath;
-    private String fileId;
+    private final String fileId;
     private final int replicationDegree;
     private static final int CHUNK_SIZE = 64000;
+    private int num_chunks = 0;
 
-    public StorageFile(Peer peer, String filePath, int replicationDegree) throws IOException, NoSuchAlgorithmException {
+    public StorageFile(Peer peer, String filePath, int replicationDegree) throws Exception {
         this.peer = peer;
         this.filePath = filePath;
         this.replicationDegree = replicationDegree;
@@ -27,7 +37,6 @@ public class StorageFile {
     }
 
     public void backup() throws IOException {
-
         // Read file data, split chunks and send them
         File file = new File(this.filePath);
         int fileSize = (int) file.length();
@@ -47,6 +56,7 @@ public class StorageFile {
 
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
             this.peer.getStorage().addSentChunk(chunk);
+            this.num_chunks++;
 
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);
@@ -58,6 +68,7 @@ public class StorageFile {
         if (fileSize % CHUNK_SIZE == 0) {
             Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
             this.peer.getStorage().addSentChunk(chunk);
+            this.num_chunks++;
 
             BackupProtocol bp = new BackupProtocol(this.peer, chunk);
             this.peer.submitBackupThread(bp);
@@ -68,10 +79,56 @@ public class StorageFile {
         fileReader.close();
     }
 
-
     public void delete() {
-        DeleteProtocol delete = new DeleteProtocol(this.peer, this.fileId);
-        this.peer.submitControlThread(delete);
+        DeleteProtocol dp = new DeleteProtocol(this.peer, this.fileId);
+        this.peer.submitControlThread(dp);
+    }
+
+    public void restore() throws Exception {
+        List<Future<Chunk>> receivedChunks = new ArrayList<>();
+
+        // Create a restore worker for each chunk of the file
+        ConcurrentHashMap<String, Chunk> sentChunks = this.peer.getStorage().getSentChunks();
+        for (Chunk chunk : sentChunks.values()) {
+            if (chunk.getFileId().equals(this.fileId)) {
+                RestoreProtocol rp = new RestoreProtocol(this.peer, chunk);
+                receivedChunks.add(this.peer.submitControlThread(rp));
+            }
+        }
+
+        // Create restored file path
+        File file = new File(this.filePath);
+        String restoredFilePath = file.getParent() + "/restored_" + file.getName();
+        Files.createDirectories(Paths.get(file.getParent()));
+
+        // Open channel to write information
+        RandomAccessFile raf = new RandomAccessFile(restoredFilePath, "rw");
+        FileChannel channel = raf.getChannel();
+
+        for (Future<Chunk> chunkFuture : receivedChunks) {
+            Chunk chunk = chunkFuture.get();
+
+            // If chunk or its body is null abort
+            if (chunk == null || chunk.getBody() == null) {
+                System.out.println("Error retrieving chunk, aborting restore");
+                return;
+            }
+            // If not the last chunk but body has less than 64KB abort
+            else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != CHUNK_SIZE) {
+                System.out.println("Not last chunk with less than 64KB, aborting restore");
+                return;
+            }
+
+            // Write body to respective position offset in file
+            ByteBuffer buffer = ByteBuffer.wrap(chunk.getBody());
+            channel.write(buffer, (long) CHUNK_SIZE * chunk.getChunkNo());
+
+            // Clear Chunk body so we don't waste memory
+            chunk.clearBody();
+        }
+
+        channel.close();
+        raf.close();
     }
 
 

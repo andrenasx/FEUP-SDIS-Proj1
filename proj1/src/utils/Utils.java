@@ -37,4 +37,9 @@ public class Utils {
 
         return fileId;
     }
+
+    public static boolean isChunkFromFile(String fileId, String chunkId) {
+        // chunkId like <fileId>_<chunkNo>, splits so we compare fileId
+        return fileId.equals(chunkId.split("_")[0]);
+    }
 }

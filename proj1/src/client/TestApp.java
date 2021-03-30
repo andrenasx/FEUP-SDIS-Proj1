@@ -14,7 +14,7 @@ public class TestApp {
         }
 
         String serviceAccessPoint = args[0];
-        String protocol = args[1];
+        String protocol = args[1].toUpperCase();
         PeerInit peer;
 
         try {

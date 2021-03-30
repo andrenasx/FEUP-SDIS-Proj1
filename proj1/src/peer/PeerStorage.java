@@ -29,9 +29,11 @@ public class PeerStorage implements Serializable {
     }
 
     public void storeChunk(Chunk chunk, byte[] body) throws IOException {
+        // Create chunk file
         Path path = Paths.get(this.storagePath + chunk.getUniqueId());
         Files.createDirectories(path.getParent());
 
+        // Write body to file
         FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
         out.write(body);
         out.close();
@@ -39,19 +41,31 @@ public class PeerStorage implements Serializable {
         System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
     }
 
-    public void deleteChunk(Chunk chunk) {
+    public byte[] restoreChunkBody(String chunkId) throws IOException {
+        // Read all information from chunk file
+        File file = new File(this.storagePath + chunkId);
+        return Files.readAllBytes(file.toPath());
+    }
+
+    public void deleteStoredChunk(Chunk chunk) {
         System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
+
+        // Delete stored chunk file and remove it from map
         File file = new File(this.storagePath + chunk.getUniqueId());
         if (file.delete()) {
             System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
             this.storedChunks.remove(chunk.getUniqueId());
         }
+        else {
+            System.out.printf("Error deleting chunk %s\n", chunk.getUniqueId());
+        }
     }
 
     public void deleteSentChunks(String fileId) {
-        for (Chunk chunk : this.storedChunks.values()) {
+        // Delete all sent chunks with given fileId
+        for (Chunk chunk : this.sentChunks.values()) {
             if (chunk.getFileId().equals(fileId)) {
-                this.storedChunks.remove(chunk.getUniqueId());
+                this.sentChunks.remove(chunk.getUniqueId());
             }
         }
     }
@@ -84,8 +98,8 @@ public class PeerStorage implements Serializable {
         return this.storedChunks.get(chunkId);
     }
 
-    public Chunk getStoredChunk(String fileId, int chunkId) {
-        return this.storedChunks.get(fileId + "_" + chunkId);
+    public Chunk getStoredChunk(String fileId, int chunkNo) {
+        return this.storedChunks.get(fileId + "_" + chunkNo);
     }
 
     public Chunk getSentChunk(String chunkId) {
@@ -151,6 +165,7 @@ public class PeerStorage implements Serializable {
                     sb.append("\t").append(chunk.toStringSent()).append("\n");
                 }
             }
+            sb.append("\n");
         }
 
         sb.append("\n---Stored Chunks---\n");
@@ -159,8 +174,8 @@ public class PeerStorage implements Serializable {
         }
 
         sb.append("\n---Storage---\n")
-                .append("\tMaximum capacity: ").append(this.storageCapacity).append(" KBytes\n")
-                .append("\tUsed space: ").append(this.getUsedSpace()).append(" KBytes\n");
+                .append("Maximum capacity: ").append(this.storageCapacity).append(" KBytes\n")
+                .append("Used space: ").append(this.getUsedSpace()).append(" KBytes\n");
 
         return sb.toString();
     }
