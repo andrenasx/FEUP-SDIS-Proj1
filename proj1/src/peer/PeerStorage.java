@@ -2,6 +2,7 @@ package peer;
 
 import storage.Chunk;
 import storage.StorageFile;
+import workers.DeleteChunkWorker;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,7 +14,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerStorage implements Serializable {
-    private final int storageCapacity;
+    private int storageCapacity;
     private final ConcurrentHashMap<String, Chunk> storedChunks;
     private final ConcurrentHashMap<String, Chunk> sentChunks;
     private final ConcurrentHashMap<String, StorageFile> fileMap;
@@ -76,6 +77,19 @@ public class PeerStorage implements Serializable {
             used += chunk.getSize();
         }
         return used;
+    }
+
+    public void reclaim(Peer peer, int maxKBytes) {
+        if (maxKBytes == 0) {
+            for (Chunk chunk : storedChunks.values()) {
+                DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
+                peer.submitControlThread(worker);
+            }
+        }
+        else {
+            this.storageCapacity = maxKBytes;
+            // TODO try to delete as many chunk with rep degree above desired as possible to achieve less than new max capacity
+        }
     }
 
     public boolean hasEnoughSpace(double chunkSize) {

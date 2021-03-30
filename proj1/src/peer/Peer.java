@@ -166,8 +166,8 @@ public class Peer implements PeerInit {
     }
 
     @Override
-    public void reclaim(int diskspace) throws RemoteException {
-        System.out.println("Implement RECLAIM");
+    public void reclaim(int maxKBytes) throws RemoteException {
+        this.storage.reclaim(this, maxKBytes);
     }
 
     @Override
