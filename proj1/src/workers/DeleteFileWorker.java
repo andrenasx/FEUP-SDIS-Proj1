@@ -1,14 +1,14 @@
-package protocol;
+package workers;
 
 import messages.DeleteMessage;
 import peer.Peer;
 import tasks.Task;
 
-public class DeleteProtocol implements Runnable {
+public class DeleteFileWorker implements Runnable {
     private final Peer peer;
     private final String fileId;
 
-    public DeleteProtocol(Peer peer, String fileId) {
+    public DeleteFileWorker(Peer peer, String fileId) {
         this.peer = peer;
         this.fileId = fileId;
     }

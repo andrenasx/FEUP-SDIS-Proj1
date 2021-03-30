@@ -1,9 +1,9 @@
 package storage;
 
 import peer.Peer;
-import protocol.BackupProtocol;
-import protocol.DeleteProtocol;
-import protocol.RestoreProtocol;
+import workers.BackupChunkWorker;
+import workers.DeleteFileWorker;
+import workers.RestoreChunkWorker;
 import utils.Utils;
 
 import java.io.File;
@@ -58,7 +58,7 @@ public class StorageFile {
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
-            BackupProtocol bp = new BackupProtocol(this.peer, chunk);
+            BackupChunkWorker bp = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(bp);
 
             System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
@@ -70,7 +70,7 @@ public class StorageFile {
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
-            BackupProtocol bp = new BackupProtocol(this.peer, chunk);
+            BackupChunkWorker bp = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(bp);
 
             System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
@@ -80,7 +80,7 @@ public class StorageFile {
     }
 
     public void delete() {
-        DeleteProtocol dp = new DeleteProtocol(this.peer, this.fileId);
+        DeleteFileWorker dp = new DeleteFileWorker(this.peer, this.fileId);
         this.peer.submitControlThread(dp);
     }
 
@@ -91,7 +91,7 @@ public class StorageFile {
         ConcurrentHashMap<String, Chunk> sentChunks = this.peer.getStorage().getSentChunks();
         for (Chunk chunk : sentChunks.values()) {
             if (chunk.getFileId().equals(this.fileId)) {
-                RestoreProtocol rp = new RestoreProtocol(this.peer, chunk);
+                RestoreChunkWorker rp = new RestoreChunkWorker(this.peer, chunk);
                 receivedChunks.add(this.peer.submitControlThread(rp));
             }
         }

@@ -1,15 +1,15 @@
-package protocol;
+package workers;
 
 import messages.PutChunkMessage;
 import peer.Peer;
 import storage.Chunk;
 import tasks.Task;
 
-public class BackupProtocol implements Runnable {
+public class BackupChunkWorker implements Runnable {
     private final Peer peer;
     private final Chunk chunk;
 
-    public BackupProtocol(Peer peer, Chunk chunk) {
+    public BackupChunkWorker(Peer peer, Chunk chunk) {
         this.peer = peer;
         this.chunk = chunk;
     }

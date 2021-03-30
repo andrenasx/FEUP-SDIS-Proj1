@@ -1,4 +1,4 @@
-package protocol;
+package workers;
 
 import messages.GetChunkMessage;
 import peer.Peer;
@@ -7,11 +7,11 @@ import tasks.Task;
 
 import java.util.concurrent.Callable;
 
-public class RestoreProtocol implements Callable<Chunk> {
+public class RestoreChunkWorker implements Callable<Chunk> {
     private final Peer peer;
     private final Chunk chunk;
 
-    public RestoreProtocol(Peer peer, Chunk chunk) {
+    public RestoreChunkWorker(Peer peer, Chunk chunk) {
         this.peer = peer;
         this.chunk = chunk;
     }
