@@ -3,7 +3,7 @@ package workers;
 import messages.GetChunkMessage;
 import peer.Peer;
 import storage.Chunk;
-import tasks.Task;
+import utils.Utils;
 
 import java.util.concurrent.Callable;
 
@@ -32,7 +32,7 @@ public class RestoreChunkWorker implements Callable<Chunk> {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (++attempt < Task.MAX_ATTEMPTS && this.chunk.getBody() == null);
+        } while (++attempt < Utils.MAX_ATTEMPTS && this.chunk.getBody() == null);
 
         return this.chunk;
     }

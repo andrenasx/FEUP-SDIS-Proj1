@@ -3,7 +3,7 @@ package workers;
 import messages.PutChunkMessage;
 import peer.Peer;
 import storage.Chunk;
-import tasks.Task;
+import utils.Utils;
 
 public class BackupChunkWorker implements Runnable {
     private final Peer peer;
@@ -36,7 +36,7 @@ public class BackupChunkWorker implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (++attempt < Task.MAX_ATTEMPTS && this.chunk.needsReplication());
+        } while (++attempt < Utils.MAX_ATTEMPTS && this.chunk.needsReplication());
 
         this.chunk.clearBody();
     }

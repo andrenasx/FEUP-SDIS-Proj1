@@ -2,7 +2,7 @@ package workers;
 
 import messages.DeleteMessage;
 import peer.Peer;
-import tasks.Task;
+import utils.Utils;
 
 public class DeleteFileWorker implements Runnable {
     private final Peer peer;
@@ -28,7 +28,7 @@ public class DeleteFileWorker implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (++attempt < Task.MAX_ATTEMPTS);
+        } while (++attempt < Utils.MAX_ATTEMPTS);
 
         this.peer.getStorage().deleteSentChunks(this.fileId);
     }
