@@ -60,7 +60,8 @@ public class Peer implements PeerInit {
         }
 
         Peer peer = new Peer(args);
-
+        /*PrintStream fileStream = new PrintStream("peer" + peer.id + ".txt");
+        System.setOut(fileStream);*/
 
         System.out.println(peer);
 
