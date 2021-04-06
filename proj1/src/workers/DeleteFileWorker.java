@@ -16,13 +16,14 @@ public class DeleteFileWorker implements Runnable {
     @Override
     public void run() {
         DeleteMessage deleteMessage = new DeleteMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.fileId);
+
         // Try to send DELETE message max 5 times
         int attempt = 0;
         do {
             this.peer.sendControlMessage(deleteMessage);
-            System.out.println("Sent DELETE");
-            int wait = (int) Math.pow(2, attempt) * 1000;
+            System.out.printf("Sent DELETE for file %s\n", this.fileId);
 
+            int wait = (int) Math.pow(2, attempt) * 1000;
             try {
                 Thread.sleep(wait);
             } catch (InterruptedException e) {
