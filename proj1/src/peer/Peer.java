@@ -166,9 +166,9 @@ public class Peer implements PeerInit {
     }
 
     @Override
-    public void reclaim(int maxKBytes) throws RemoteException {
+    public void reclaim(double maxKBytes) throws RemoteException {
         this.storage.reclaim(this, maxKBytes);
-    }
+}
 
     @Override
     public String state() throws RemoteException {

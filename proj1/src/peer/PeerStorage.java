@@ -14,7 +14,8 @@ import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerStorage implements Serializable {
-    private int storageCapacity;
+    private double storageCapacity;
+    private double occupiedSpace;
     private final ConcurrentHashMap<String, Chunk> storedChunks;
     private final ConcurrentHashMap<String, Chunk> sentChunks;
     private final ConcurrentHashMap<String, StorageFile> fileMap;
@@ -39,6 +40,7 @@ public class PeerStorage implements Serializable {
         out.write(body);
         out.close();
 
+        this.occupySpace(chunk.getSize());
         System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
     }
 
@@ -56,8 +58,8 @@ public class PeerStorage implements Serializable {
         if (file.delete()) {
             System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
             this.storedChunks.remove(chunk.getUniqueId());
-        }
-        else {
+            this.freeSpace(chunk.getSize());
+        } else {
             System.out.printf("Error deleting chunk %s\n", chunk.getUniqueId());
         }
     }
@@ -79,25 +81,62 @@ public class PeerStorage implements Serializable {
         return used;
     }
 
-    public void reclaim(Peer peer, int maxKBytes) {
+    public void reclaim(Peer peer, double maxKBytes) {
         if (maxKBytes == 0) {
             for (Chunk chunk : storedChunks.values()) {
                 DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
                 peer.submitControlThread(worker);
             }
-        }
-        else {
+        } else {
             this.storageCapacity = maxKBytes;
-            // TODO try to delete as many chunk with rep degree above desired as possible to achieve less than new max capacity
+
+            if (this.occupiedSpace <= this.storageCapacity) return;
+
+            for (Chunk chunk : this.storedChunks.values()) {
+                if (chunk.isOverReplicated()) {
+                    DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
+                    peer.submitControlThread(worker);
+                }
+
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                System.out.println("Can't sleep");
+            }
+
+
+            for (Chunk chunk : this.storedChunks.values()) {
+                DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
+                peer.submitControlThread(worker);
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    System.out.println("Can't sleep");
+                }
+                if (this.occupiedSpace <= this.storageCapacity)
+                    return;
+
+            }
+
         }
     }
 
+    public synchronized void occupySpace(double space) {
+        this.occupiedSpace += space;
+    }
+
+    public synchronized void freeSpace(double space) {
+        this.occupiedSpace -= space;
+    }
+
     public boolean hasEnoughSpace(double chunkSize) {
-        return this.getUsedSpace() + chunkSize <= this.storageCapacity;
+        return this.occupiedSpace + chunkSize <= this.storageCapacity;
     }
 
     public void addStoredChunk(String chunkId, Chunk chunk) {
         this.storedChunks.put(chunkId, chunk);
+
     }
 
     public void removeStoredChunk(String chunkUniqueId) {
@@ -152,7 +191,7 @@ public class PeerStorage implements Serializable {
         return fileMap;
     }
 
-    public int getStorageCapacity() {
+    public double getStorageCapacity() {
         return storageCapacity;
     }
 
@@ -189,7 +228,8 @@ public class PeerStorage implements Serializable {
 
         sb.append("\n---Storage---\n")
                 .append("Maximum capacity: ").append(this.storageCapacity).append(" KBytes\n")
-                .append("Used space: ").append(this.getUsedSpace()).append(" KBytes\n");
+                .append("Used space: ").append(this.occupiedSpace).append(" KBytes\n")
+                .append("Occupied space: ").append(this.getUsedSpace()).append(" KBytes\n");
 
         return sb.toString();
     }

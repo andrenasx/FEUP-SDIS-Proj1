@@ -72,7 +72,7 @@ public class TestApp {
                         return;
                     }
 
-                    int diskspace = Integer.parseInt(args[2]);
+                    double diskspace = Double.parseDouble(args[2]);
 
                     try {
                         peer.reclaim(diskspace);

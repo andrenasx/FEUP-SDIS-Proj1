@@ -48,6 +48,10 @@ public class Chunk implements Serializable {
         return this.peersAcks.size() < this.replicationDegree;
     }
 
+    public boolean isOverReplicated() {
+        return this.peersAcks.size() > this.replicationDegree;
+    }
+
     public void clearBody() {
         this.body = null;
     }
