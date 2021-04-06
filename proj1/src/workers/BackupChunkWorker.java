@@ -28,9 +28,8 @@ public class BackupChunkWorker implements Runnable {
         do {
             this.peer.sendBackupMessage(putChunkMessage);
             //System.out.println(String.format("Sent PUTCHUNK: chunk no: %d ; file: %s", putChunkMessage.chunkNo, putChunkMessage.fileId));
+
             int wait = (int) Math.pow(2, attempt) * 1000;
-
-
             try {
                 Thread.sleep(wait);
             } catch (InterruptedException e) {

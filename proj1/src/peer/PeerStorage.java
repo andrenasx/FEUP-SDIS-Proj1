@@ -9,7 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,18 +22,22 @@ public class PeerStorage implements Serializable {
 
     public PeerStorage(int id) {
         this.storageCapacity = 100000; // 100000 KB
+        this.occupiedSpace = 0;
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
         this.fileMap = new ConcurrentHashMap<>();
 
-        this.storagePath = "../assets/Peer" + id + "/";
+        this.storagePath = "../peer_storage/Peer" + id + "/";
+
+        // Create peer storage folder
+        try {
+            Files.createDirectories(Paths.get(this.storagePath));
+        } catch (IOException e) {
+            System.err.println("Failed to create peer storage directory!" + e.getMessage());
+        }
     }
 
     public void storeChunk(Chunk chunk, byte[] body) throws IOException {
-        // Create chunk file
-        Path path = Paths.get(this.storagePath + chunk.getUniqueId());
-        Files.createDirectories(path.getParent());
-
         // Write body to file
         FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
         out.write(body);
@@ -56,10 +59,11 @@ public class PeerStorage implements Serializable {
         // Delete stored chunk file and remove it from map
         File file = new File(this.storagePath + chunk.getUniqueId());
         if (file.delete()) {
-            System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
             this.storedChunks.remove(chunk.getUniqueId());
             this.freeSpace(chunk.getSize());
-        } else {
+            System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
+        }
+        else {
             System.out.printf("Error deleting chunk %s\n", chunk.getUniqueId());
         }
     }
@@ -87,24 +91,36 @@ public class PeerStorage implements Serializable {
                 DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
                 peer.submitControlThread(worker);
             }
-        } else {
+        }
+        else {
             this.storageCapacity = maxKBytes;
+            System.out.println(this.storageCapacity);
 
             if (this.occupiedSpace <= this.storageCapacity) return;
+
+            System.out.println("Going to delete over replicated");
 
             for (Chunk chunk : this.storedChunks.values()) {
                 if (chunk.isOverReplicated()) {
                     DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
                     peer.submitControlThread(worker);
                 }
-
             }
+
+            System.out.println("Deleted over replicated");
+
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 System.out.println("Can't sleep");
             }
 
+            if (this.occupiedSpace <= this.storageCapacity){
+                System.out.println("Finished Reclaim");
+                return;
+            }
+
+            System.out.println("Going to delete rest");
 
             for (Chunk chunk : this.storedChunks.values()) {
                 DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
@@ -114,11 +130,14 @@ public class PeerStorage implements Serializable {
                 } catch (InterruptedException e) {
                     System.out.println("Can't sleep");
                 }
-                if (this.occupiedSpace <= this.storageCapacity)
-                    return;
 
+                if (this.occupiedSpace <= this.storageCapacity){
+                    System.out.println("Finished Reclaim");
+                    return;
+                }
             }
 
+            System.out.println("Finished Reclaim");
         }
     }
 

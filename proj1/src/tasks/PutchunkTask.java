@@ -15,7 +15,7 @@ public class PutchunkTask extends Task {
 
     @Override
     public void run() {
-        //System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.chunkNo, this.message.fileId));
+        System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.chunkNo, this.message.fileId));
 
         Chunk chunk;
         // If peer does not have received chunk add it to peer StoredChunk map
@@ -43,6 +43,7 @@ public class PutchunkTask extends Task {
             // Check if peer has enough space to store chunk
             if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
                 System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
+                this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
                 return;
             }
 
