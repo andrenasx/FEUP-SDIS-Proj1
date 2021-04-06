@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerStorage implements Serializable {
@@ -98,16 +99,14 @@ public class PeerStorage implements Serializable {
 
             if (this.occupiedSpace <= this.storageCapacity) return;
 
-            System.out.println("Going to delete over replicated");
-
-            for (Chunk chunk : this.storedChunks.values()) {
+            for (Map.Entry<String, Chunk> entry : this.storedChunks.entrySet()) {
+                Chunk chunk = entry.getValue();
                 if (chunk.isOverReplicated()) {
                     DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
                     peer.submitControlThread(worker);
                 }
             }
 
-            System.out.println("Deleted over replicated");
 
             try {
                 Thread.sleep(100);
@@ -115,14 +114,11 @@ public class PeerStorage implements Serializable {
                 System.out.println("Can't sleep");
             }
 
-            if (this.occupiedSpace <= this.storageCapacity){
-                System.out.println("Finished Reclaim");
-                return;
-            }
 
-            System.out.println("Going to delete rest");
+            if (this.occupiedSpace <= this.storageCapacity) return;
 
-            for (Chunk chunk : this.storedChunks.values()) {
+            for (Map.Entry<String, Chunk> entry : this.storedChunks.entrySet()) {
+                Chunk chunk = entry.getValue();
                 DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
                 peer.submitControlThread(worker);
                 try {
@@ -131,10 +127,7 @@ public class PeerStorage implements Serializable {
                     System.out.println("Can't sleep");
                 }
 
-                if (this.occupiedSpace <= this.storageCapacity){
-                    System.out.println("Finished Reclaim");
-                    return;
-                }
+                if (this.occupiedSpace <= this.storageCapacity) return;
             }
 
             System.out.println("Finished Reclaim");
