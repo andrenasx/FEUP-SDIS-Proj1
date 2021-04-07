@@ -2,6 +2,7 @@ package peer;
 
 import storage.Chunk;
 import storage.StorageFile;
+import utils.Utils;
 import workers.DeleteChunkWorker;
 
 import java.io.*;
@@ -25,7 +26,7 @@ public class PeerStorage implements Serializable {
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
         this.fileMap = new ConcurrentHashMap<>();
-        this.storagePath = "../peer_storage/Peer" + id + "/";
+        this.storagePath = "../PeerStorage/Peer" + id + "/";
 
         // Create peer storage folder
         try {
@@ -80,7 +81,7 @@ public class PeerStorage implements Serializable {
         out.close();
 
         this.occupySpace(chunk.getSize());
-        System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
+        System.out.println("[BACKUP] Stored chunk " + chunk.getUniqueId());
         this.saveState();
     }
 
@@ -90,18 +91,18 @@ public class PeerStorage implements Serializable {
         return Files.readAllBytes(file.toPath());
     }
 
-    public void deleteStoredChunk(Chunk chunk) {
-        System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
+    public void deleteStoredChunk(Chunk chunk, String protocol) {
+        //System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
 
         // Delete stored chunk file and remove it from map
         File file = new File(this.storagePath + chunk.getUniqueId());
         if (file.delete()) {
             this.storedChunks.remove(chunk.getUniqueId());
             this.freeSpace(chunk.getSize());
-            System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
+            System.out.printf("[%s] Deleted chunk %s\n", protocol, chunk.getUniqueId());
         }
         else {
-            System.out.printf("Error deleting chunk %s\n", chunk.getUniqueId());
+            System.err.printf("Error deleting chunk %s\n", chunk.getUniqueId());
         }
         this.saveState();
     }
@@ -116,15 +117,12 @@ public class PeerStorage implements Serializable {
         this.saveState();
     }
 
-    private double getUsedSpace() {
-        double used = 0;
-        for (Chunk chunk : this.storedChunks.values()) {
-            used += chunk.getSize();
-        }
-        return used;
-    }
-
     public void reclaim(Peer peer, double maxKBytes) {
+        // Set new capacity
+        this.storageCapacity = maxKBytes;
+        System.out.println("\n[RECLAIMING] New storage capacity: " + this.storageCapacity);
+
+        // Clean all stored chunks if 0
         if (maxKBytes == 0) {
             for (Chunk chunk : storedChunks.values()) {
                 DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
@@ -132,11 +130,10 @@ public class PeerStorage implements Serializable {
             }
         }
         else {
-            this.storageCapacity = maxKBytes;
-            System.out.println(this.storageCapacity);
-
+            // End reclaim if new set capacity is higher than occupied space
             if (this.occupiedSpace <= this.storageCapacity) return;
 
+            // Delete all chunks that are over replicated (perceived replication degree is higher then desired)
             for (Map.Entry<String, Chunk> entry : this.storedChunks.entrySet()) {
                 Chunk chunk = entry.getValue();
                 if (chunk.isOverReplicated()) {
@@ -145,30 +142,20 @@ public class PeerStorage implements Serializable {
                 }
             }
 
+            // Sleep so all threads finish delete
+            Utils.sleep(100);
 
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                System.out.println("Can't sleep");
-            }
-
-
+            // End reclaim if storage capacity is higher than occupied space after last deletion
             if (this.occupiedSpace <= this.storageCapacity) return;
 
+            // Delete chunks until storage capacity is higher than occupied space after deletion
             for (Map.Entry<String, Chunk> entry : this.storedChunks.entrySet()) {
                 Chunk chunk = entry.getValue();
                 DeleteChunkWorker worker = new DeleteChunkWorker(peer, chunk);
-                peer.submitControlThread(worker);
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    System.out.println("Can't sleep");
-                }
+                worker.run();
 
                 if (this.occupiedSpace <= this.storageCapacity) return;
             }
-
-            System.out.println("Finished Reclaim");
         }
     }
 
@@ -195,17 +182,17 @@ public class PeerStorage implements Serializable {
         this.storedChunks.remove(chunkUniqueId);
     }
 
-    public void addSentChunk(Chunk chunk) {
-        this.sentChunks.put(chunk.getUniqueId(), chunk);
-        this.saveState();
-    }
-
     public Chunk getStoredChunk(String chunkId) {
         return this.storedChunks.get(chunkId);
     }
 
     public Chunk getStoredChunk(String fileId, int chunkNo) {
         return this.storedChunks.get(fileId + "_" + chunkNo);
+    }
+
+    public void addSentChunk(Chunk chunk) {
+        this.sentChunks.put(chunk.getUniqueId(), chunk);
+        this.saveState();
     }
 
     public Chunk getSentChunk(String chunkId) {
@@ -281,8 +268,7 @@ public class PeerStorage implements Serializable {
 
         sb.append("\n---Storage---\n")
                 .append("Maximum capacity: ").append(this.storageCapacity).append(" KBytes\n")
-                .append("Used space: ").append(this.occupiedSpace).append(" KBytes\n")
-                .append("Occupied space: ").append(this.getUsedSpace()).append(" KBytes\n");
+                .append("Occupied space: ").append(this.occupiedSpace).append(" KBytes\n");
 
         return sb.toString();
     }

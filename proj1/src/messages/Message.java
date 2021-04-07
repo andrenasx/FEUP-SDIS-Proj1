@@ -6,13 +6,13 @@ import java.net.DatagramPacket;
 import java.util.Arrays;
 
 public abstract class Message {
-    public String protocolVersion;
+    protected String protocolVersion;
     protected String messageType;
-    public int senderId;
-    public String fileId;
-    public int chunkNo;
-    public int replicationDeg;
-    public byte[] body;
+    protected int senderId;
+    protected String fileId;
+    protected int chunkNo;
+    protected int replicationDeg;
+    protected byte[] body;
 
     Message(String protocolVersion, String messageType, int senderId, String fileId, int chunkNo, int replicationDeg, byte[] body) {
         this.protocolVersion = protocolVersion;
@@ -85,5 +85,31 @@ public abstract class Message {
         return peerId == this.senderId;
     }
 
+    public String getProtocolVersion() {
+        return protocolVersion;
+    }
 
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public int getSenderId() {
+        return senderId;
+    }
+
+    public String getFileId() {
+        return fileId;
+    }
+
+    public int getChunkNo() {
+        return chunkNo;
+    }
+
+    public int getReplicationDeg() {
+        return replicationDeg;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
 }

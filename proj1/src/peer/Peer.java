@@ -47,6 +47,7 @@ public class Peer implements PeerInit {
         mdbChannel = new MulticastChannel(args[5], Integer.parseInt(args[6]), this);
         mdrChannel = new MulticastChannel(args[7], Integer.parseInt(args[8]), this);
 
+        // Create thread pools
         this.threadPoolMC = Executors.newFixedThreadPool(MAX_THREADS_C);
         this.threadPoolMDB = Executors.newFixedThreadPool(MAX_THREADS);
         this.threadPoolMDR = Executors.newFixedThreadPool(MAX_THREADS);
@@ -80,7 +81,7 @@ public class Peer implements PeerInit {
         this.threadPoolMC.submit(action);
     }
 
-    public Future<Chunk>  submitControlThread(Callable<Chunk> action) {
+    public Future<Chunk> submitControlThread(Callable<Chunk> action) {
         return this.threadPoolMC.submit(action);
     }
 
@@ -135,7 +136,7 @@ public class Peer implements PeerInit {
             storageFile.backup();
             this.storage.getFileMap().put(filepath, storageFile);
         } catch (Exception e) {
-            System.out.println("Can't backup file " + filepath);
+            System.err.println("Can't backup file " + filepath);
         }
     }
 
@@ -143,7 +144,7 @@ public class Peer implements PeerInit {
     public void delete(String filepath) {
         StorageFile storageFile = this.storage.getFileMap().get(filepath);
         if (storageFile == null) {
-            System.out.println("Can't delete file " + filepath + ", not found");
+            System.err.println("Can't delete file " + filepath + ", not found");
             return;
         }
         storageFile.delete();
@@ -154,21 +155,21 @@ public class Peer implements PeerInit {
     public void restore(String filepath) throws RemoteException {
         StorageFile storageFile = this.storage.getFileMap().get(filepath);
         if (storageFile == null) {
-            System.out.println("Can't restore file " + filepath + ", not found");
+            System.err.println("Can't restore file " + filepath + ", not found");
             return;
         }
 
         try {
             storageFile.restore();
         } catch (Exception e) {
-            System.out.println("Error restoring file " + filepath);
+            System.err.println("Error restoring file " + filepath);
         }
     }
 
     @Override
     public void reclaim(double maxKBytes) throws RemoteException {
         this.storage.reclaim(this, maxKBytes);
-}
+    }
 
     @Override
     public String state() throws RemoteException {

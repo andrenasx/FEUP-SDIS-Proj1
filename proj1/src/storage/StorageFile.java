@@ -36,6 +36,8 @@ public class StorageFile implements Serializable {
     }
 
     public void backup() throws IOException {
+        System.out.printf("\n[BACKUP] Initiated backup for file: %s\n", fileId);
+
         // Read file data, split chunks and send them
         File file = new File(this.filePath);
         int fileSize = (int) file.length();
@@ -53,14 +55,16 @@ public class StorageFile implements Serializable {
                 bytesRead += fileReader.read(data, 0, fileSize - bytesRead);
             }
 
+            // Create new Chunk and add to peer storage sentChunk map
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
+            // Submit backup worker
             BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(worker);
 
-            System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
+            System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
 
         // If the file size is a multiple of the chunk size, the last chunk has size 0
@@ -72,7 +76,7 @@ public class StorageFile implements Serializable {
             BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(worker);
 
-            System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
+            System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
 
         fileReader.close();
@@ -80,11 +84,16 @@ public class StorageFile implements Serializable {
     }
 
     public void delete() {
+        // Submit delete worker for this file
         DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
         this.peer.submitControlThread(worker);
+
+        System.out.printf("\n[DELETION] Submitted delete for file: %s\n", this.fileId);
     }
 
     public void restore() throws Exception {
+        System.out.printf("\n[RESTORE] Initiated restore for file: %s\n", fileId);
+
         List<Future<Chunk>> receivedChunks = new ArrayList<>();
 
         // Create a restore worker for each chunk of the file
@@ -93,6 +102,7 @@ public class StorageFile implements Serializable {
             if (chunk.getFileId().equals(this.fileId)) {
                 RestoreChunkWorker worker = new RestoreChunkWorker(this.peer, chunk);
                 receivedChunks.add(this.peer.submitControlThread(worker));
+                System.out.printf("[RESTORE] Submitted restore for chunk: %s\n", chunk.getUniqueId());
             }
         }
 
@@ -108,14 +118,14 @@ public class StorageFile implements Serializable {
         for (Future<Chunk> chunkFuture : receivedChunks) {
             Chunk chunk = chunkFuture.get();
 
-            // If chunk or its body is null abort
+            // Abort if chunk or its body is null
             if (chunk == null || chunk.getBody() == null) {
-                System.out.println("Error retrieving chunk, aborting restore");
+                System.err.println("Error retrieving chunk, aborting restore");
                 return;
             }
-            // If not the last chunk but body has less than 64KB abort
+            // Abort if not the last chunk but body has less than 64KB
             else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != CHUNK_SIZE) {
-                System.out.println("Not last chunk with less than 64KB, aborting restore");
+                System.err.println("Not last chunk with less than 64KB, aborting restore");
                 return;
             }
 
@@ -129,6 +139,8 @@ public class StorageFile implements Serializable {
 
         channel.close();
         raf.close();
+
+        System.out.printf("[RESTORE] Finished restore for file %s\n", this.fileId);
     }
 
 

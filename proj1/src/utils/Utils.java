@@ -12,14 +12,23 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     public static final int CRLF = 0xDA;
-    public static int MAX_ATTEMPTS = 5;
+    public static int MAX_5_ATTEMPTS = 5;
+    public static int MAX_3_ATTEMPTS = 3;
+
+    public static void sleep(int millis){
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            System.err.println("Can't sleep");
+        }
+    }
 
     public static void sleepRandom() {
         try {
             int sleepFor = ThreadLocalRandom.current().nextInt(0, 401);
             Thread.sleep(sleepFor);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.err.println("Can't sleep");
         }
     }
 
