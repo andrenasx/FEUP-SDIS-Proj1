@@ -10,7 +10,7 @@ public interface PeerInit extends Remote {
 
     void delete(String filepath) throws RemoteException;
 
-    void reclaim(int diskspace) throws RemoteException;
+    void reclaim(double diskspace) throws RemoteException;
 
     String state() throws RemoteException;
 }

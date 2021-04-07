@@ -36,12 +36,20 @@ public class Chunk implements Serializable {
         this.peersAcks.add(peerId);
     }
 
+    public void removePeerAck(int peerId) {
+        this.peersAcks.remove(peerId);
+    }
+
     public int getNumberPeersAcks() {
         return this.peersAcks.size();
     }
 
     public boolean needsReplication() {
         return this.peersAcks.size() < this.replicationDegree;
+    }
+
+    public boolean isOverReplicated() {
+        return this.peersAcks.size() > this.replicationDegree;
     }
 
     public void clearBody() {

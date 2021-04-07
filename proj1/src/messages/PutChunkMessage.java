@@ -3,7 +3,6 @@ package messages;
 import peer.Peer;
 import storage.Chunk;
 import tasks.PutchunkTask;
-import tasks.Task;
 
 import java.nio.charset.StandardCharsets;
 
@@ -14,7 +13,6 @@ public class PutChunkMessage extends Message {
 
     public PutChunkMessage(Peer peer, Chunk chunk) {
         super(peer.getProtocolVersion(), "PUTCHUNK", peer.getId(), chunk.getFileId(), chunk.getChunkNo(), chunk.getDesiredReplicationDegree(), chunk.getBody());
-
     }
 
     @Override

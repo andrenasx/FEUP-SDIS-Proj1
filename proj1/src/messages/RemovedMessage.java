@@ -1,6 +1,7 @@
 package messages;
 
 import peer.Peer;
+import tasks.RemovedTask;
 
 import java.nio.charset.StandardCharsets;
 
@@ -21,6 +22,7 @@ public class RemovedMessage extends Message {
 
     @Override
     public void submitTask(Peer peer) {
-
+        RemovedTask removedTask = new RemovedTask(peer, this);
+        peer.submitControlThread(removedTask);
     }
 }

@@ -3,7 +3,7 @@ package workers;
 import messages.PutChunkMessage;
 import peer.Peer;
 import storage.Chunk;
-import tasks.Task;
+import utils.Utils;
 
 public class BackupChunkWorker implements Runnable {
     private final Peer peer;
@@ -28,15 +28,14 @@ public class BackupChunkWorker implements Runnable {
         do {
             this.peer.sendBackupMessage(putChunkMessage);
             //System.out.println(String.format("Sent PUTCHUNK: chunk no: %d ; file: %s", putChunkMessage.chunkNo, putChunkMessage.fileId));
+
             int wait = (int) Math.pow(2, attempt) * 1000;
-
-
             try {
                 Thread.sleep(wait);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (++attempt < Task.MAX_ATTEMPTS && this.chunk.needsReplication());
+        } while (++attempt < Utils.MAX_ATTEMPTS && this.chunk.needsReplication());
 
         this.chunk.clearBody();
     }

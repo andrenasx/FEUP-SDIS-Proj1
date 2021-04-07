@@ -15,7 +15,13 @@ public class PutchunkTask extends Task {
 
     @Override
     public void run() {
-        //System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.chunkNo, this.message.fileId));
+        System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.chunkNo, this.message.fileId));
+
+        // Abort if it was a chunk this peer backed up or if this peer doesn't have enough space
+        if (this.peer.getStorage().hasSentChunk(this.message.fileId, this.message.chunkNo) || !this.peer.getStorage().hasEnoughSpace(this.message.body.length / 1000.0)) {
+            System.out.println(String.format("Aborting PUTCHUNK, my chunk or not enough space"));
+            return;
+        }
 
         Chunk chunk;
         // If peer does not have received chunk add it to peer StoredChunk map
@@ -43,6 +49,7 @@ public class PutchunkTask extends Task {
             // Check if peer has enough space to store chunk
             if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
                 System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
+                this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
                 return;
             }
 

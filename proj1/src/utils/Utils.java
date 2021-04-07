@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     public static final int CRLF = 0xDA;
+    public static int MAX_ATTEMPTS = 5;
 
     public static void sleepRandom() {
         try {

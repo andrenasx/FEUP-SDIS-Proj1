@@ -58,8 +58,8 @@ public class StorageFile {
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
-            BackupChunkWorker bp = new BackupChunkWorker(this.peer, chunk);
-            this.peer.submitBackupThread(bp);
+            BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
+            this.peer.submitBackupThread(worker);
 
             System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
         }
@@ -70,8 +70,8 @@ public class StorageFile {
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
-            BackupChunkWorker bp = new BackupChunkWorker(this.peer, chunk);
-            this.peer.submitBackupThread(bp);
+            BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
+            this.peer.submitBackupThread(worker);
 
             System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
         }
@@ -80,8 +80,8 @@ public class StorageFile {
     }
 
     public void delete() {
-        DeleteFileWorker dp = new DeleteFileWorker(this.peer, this.fileId);
-        this.peer.submitControlThread(dp);
+        DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
+        this.peer.submitControlThread(worker);
     }
 
     public void restore() throws Exception {
@@ -91,8 +91,8 @@ public class StorageFile {
         ConcurrentHashMap<String, Chunk> sentChunks = this.peer.getStorage().getSentChunks();
         for (Chunk chunk : sentChunks.values()) {
             if (chunk.getFileId().equals(this.fileId)) {
-                RestoreChunkWorker rp = new RestoreChunkWorker(this.peer, chunk);
-                receivedChunks.add(this.peer.submitControlThread(rp));
+                RestoreChunkWorker worker = new RestoreChunkWorker(this.peer, chunk);
+                receivedChunks.add(this.peer.submitControlThread(worker));
             }
         }
 
