@@ -29,7 +29,7 @@ public class PeerStorage implements Serializable {
         this.sentChunks = new ConcurrentHashMap<>();
         this.fileMap = new ConcurrentHashMap<>();
 
-        this.storagePath = "../peer_storage/Peer" + id + "/";
+        this.storagePath = "../PeerStorage/Peer" + id + "/";
 
         // Create peer storage folder
         try {
@@ -46,7 +46,7 @@ public class PeerStorage implements Serializable {
         out.close();
 
         this.occupySpace(chunk.getSize());
-        System.out.println("Chunk no " + chunk.getChunkNo() + " stored successfully");
+        System.out.println("[BACKUP] Stored chunk " + chunk.getUniqueId());
     }
 
     public byte[] restoreChunkBody(String chunkId) throws IOException {
@@ -55,7 +55,7 @@ public class PeerStorage implements Serializable {
         return Files.readAllBytes(file.toPath());
     }
 
-    public void deleteStoredChunk(Chunk chunk) {
+    public void deleteStoredChunk(Chunk chunk, String protocol) {
         //System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
 
         // Delete stored chunk file and remove it from map
@@ -63,7 +63,7 @@ public class PeerStorage implements Serializable {
         if (file.delete()) {
             this.storedChunks.remove(chunk.getUniqueId());
             this.freeSpace(chunk.getSize());
-            System.out.printf("Deleted chunk %s\n", chunk.getUniqueId());
+            System.out.printf("[%s] Deleted chunk %s\n", protocol, chunk.getUniqueId());
         }
         else {
             System.err.printf("Error deleting chunk %s\n", chunk.getUniqueId());
@@ -82,6 +82,7 @@ public class PeerStorage implements Serializable {
     public void reclaim(Peer peer, double maxKBytes) {
         // Set new capacity
         this.storageCapacity = maxKBytes;
+        System.out.println("\n[RECLAIMING] New storage capacity: " + this.storageCapacity);
 
         // Clean all stored chunks if 0
         if (maxKBytes == 0) {

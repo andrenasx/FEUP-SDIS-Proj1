@@ -15,14 +15,14 @@ public class ChunkTask extends Task {
         if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.setSent(true);
-            System.out.println("Received CHUNK from  " + this.message.getSenderId() + " for chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
+            //System.out.println("[RESTORE] Received CHUNK from  " + this.message.getSenderId() + " for chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
 
         // If it is a sent chunk, add body to the chunk so we can restore information
         else if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.setBody(message.getBody());
-            System.out.println("Add body to chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
+            //System.out.println("[RESTORE] Added body to chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
     }
 }

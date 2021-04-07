@@ -17,12 +17,12 @@ public class StoredTask extends Task {
         if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.addPeerAck(this.message.getSenderId());
-            //System.out.println("Added ack for stored chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
+            //System.out.println("[BACKUP] Added ack for stored chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
         else if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.addPeerAck(this.message.getSenderId());
-            //System.out.println("Added ack for sent chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
+            //System.out.println("[BACKUP] Added ack for sent chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
     }
 }

@@ -19,7 +19,7 @@ public class DeleteTask extends Task {
         ConcurrentHashMap<String, Chunk> chunks = this.peer.getStorage().getStoredChunks();
         for (Chunk chunk : chunks.values()) {
             if (chunk.getFileId().equals(this.message.getFileId())) {
-                this.peer.getStorage().deleteStoredChunk(chunk);
+                this.peer.getStorage().deleteStoredChunk(chunk, "DELETION");
             }
         }
     }

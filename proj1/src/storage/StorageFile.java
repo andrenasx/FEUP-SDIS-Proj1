@@ -37,6 +37,8 @@ public class StorageFile {
     }
 
     public void backup() throws IOException {
+        System.out.printf("\n[BACKUP] Initiated backup for file: %s\n", fileId);
+
         // Read file data, split chunks and send them
         File file = new File(this.filePath);
         int fileSize = (int) file.length();
@@ -63,7 +65,7 @@ public class StorageFile {
             BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(worker);
 
-            System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
+            System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
 
         // If the file size is a multiple of the chunk size, the last chunk has size 0
@@ -75,7 +77,7 @@ public class StorageFile {
             BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(worker);
 
-            System.out.printf("Submitted chunk %d of file %s\n", i, fileId);
+            System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
 
         fileReader.close();
@@ -85,9 +87,13 @@ public class StorageFile {
         // Submit delete worker for this file
         DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
         this.peer.submitControlThread(worker);
+
+        System.out.printf("\n[DELETION] Submitted delete for file: %s\n", this.fileId);
     }
 
     public void restore() throws Exception {
+        System.out.printf("\n[RESTORE] Initiated restore for file: %s\n", fileId);
+
         List<Future<Chunk>> receivedChunks = new ArrayList<>();
 
         // Create a restore worker for each chunk of the file
@@ -96,6 +102,7 @@ public class StorageFile {
             if (chunk.getFileId().equals(this.fileId)) {
                 RestoreChunkWorker worker = new RestoreChunkWorker(this.peer, chunk);
                 receivedChunks.add(this.peer.submitControlThread(worker));
+                System.out.printf("[RESTORE] Submitted restore for chunk: %s\n", chunk.getUniqueId());
             }
         }
 
@@ -132,6 +139,8 @@ public class StorageFile {
 
         channel.close();
         raf.close();
+
+        System.out.printf("[RESTORE] Finished restore for file %s\n", this.fileId);
     }
 
 

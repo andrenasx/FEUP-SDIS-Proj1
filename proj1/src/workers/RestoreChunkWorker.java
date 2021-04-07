@@ -24,7 +24,7 @@ public class RestoreChunkWorker implements Callable<Chunk> {
         int attempt = 0;
         do {
             this.peer.sendControlMessage(getChunkMessage);
-            System.out.println("Sent GETCHUNK chunk no " + this.chunk.getChunkNo());
+            //System.out.println("Sent GETCHUNK chunk no " + this.chunk.getChunkNo());
 
             int wait = (int) Math.pow(2, attempt) * 1000;
             Utils.sleep(wait);

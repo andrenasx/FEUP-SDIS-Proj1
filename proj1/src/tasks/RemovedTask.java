@@ -22,12 +22,12 @@ public class RemovedTask extends Task {
         if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.removePeerAck(this.message.getSenderId());
-            //System.out.println("Removed ack for sent chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
+            //System.out.println("[RECLAIMING] Removed ack from peer " + this.message.getFileId() + " for sent chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
         else if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.removePeerAck(this.message.getSenderId());
-            //System.out.println("Removed ack for stored chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
+            //System.out.println("[RECLAIMING] Removed ack from peer " + this.message.getFileId() +" for stored chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
 
             // Check if this peer has this chunk and it needs replication
             if (chunk.needsReplication() && chunk.isStoredLocally()) {
@@ -43,9 +43,11 @@ public class RemovedTask extends Task {
                         System.err.println("Couldn't restore chunk body");
                     }
 
+                    System.out.printf("[RECLAIMING] Chunk %s needs replication\n", chunk.getUniqueId());
+
                     BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
                     this.peer.submitBackupThread(worker);
-                    System.out.printf("Submitted chunk %d of file %s\n", chunk.getChunkNo(), chunk.getFileId());
+                    System.out.printf("[BACKUP] Submitted backup for chunk: %s\n", chunk.getUniqueId());
 
                     // Sleep to make sure peer stores chunk before receiving this peer STORED message
                     Utils.sleep(50);

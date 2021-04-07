@@ -23,7 +23,7 @@ public class GetChunkTask extends Task {
 
         // Abort if peer does not have chunk stored
         if (chunk == null || !chunk.isStoredLocally()) {
-            System.out.println("Don't have chunk, id: " + chunkId);
+            //System.out.println("Don't have chunk, id: " + chunkId);
             return;
         }
 
@@ -40,7 +40,7 @@ public class GetChunkTask extends Task {
 
                 ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.getFileId(), this.message.getChunkNo(), body);
                 this.peer.sendRestoreMessage(chunkMessage);
-                System.out.println("Sent CHUNK message for chunk :" + chunkId);
+                System.out.println("[RESTORE] Sent CHUNK message for chunk :" + chunkId);
             } catch (IOException e) {
                 System.err.println("Unable to restore chunk, id:" + chunkId);
             }

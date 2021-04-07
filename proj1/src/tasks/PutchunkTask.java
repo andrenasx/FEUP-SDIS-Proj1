@@ -19,7 +19,7 @@ public class PutchunkTask extends Task {
 
         // Abort if it was a chunk this peer backed up or if this peer doesn't have enough space
         if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo()) || !this.peer.getStorage().hasEnoughSpace(this.message.getBody().length / 1000.0)) {
-            System.out.println("Aborting PUTCHUNK, my chunk or not enough space");
+            //System.out.println("[BACKUP] Aborting PUTCHUNK, my chunk or not enough space");
             return;
         }
 
