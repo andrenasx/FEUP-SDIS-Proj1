@@ -54,10 +54,12 @@ public class StorageFile {
                 bytesRead += fileReader.read(data, 0, fileSize - bytesRead);
             }
 
+            // Create new Chunk and add to peer storage sentChunk map
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
+            // Submit backup worker
             BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
             this.peer.submitBackupThread(worker);
 
@@ -80,6 +82,7 @@ public class StorageFile {
     }
 
     public void delete() {
+        // Submit delete worker for this file
         DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
         this.peer.submitControlThread(worker);
     }
@@ -108,14 +111,14 @@ public class StorageFile {
         for (Future<Chunk> chunkFuture : receivedChunks) {
             Chunk chunk = chunkFuture.get();
 
-            // If chunk or its body is null abort
+            // Abort if chunk or its body is null
             if (chunk == null || chunk.getBody() == null) {
-                System.out.println("Error retrieving chunk, aborting restore");
+                System.err.println("Error retrieving chunk, aborting restore");
                 return;
             }
-            // If not the last chunk but body has less than 64KB abort
+            // Abort if not the last chunk but body has less than 64KB
             else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != CHUNK_SIZE) {
-                System.out.println("Not last chunk with less than 64KB, aborting restore");
+                System.err.println("Not last chunk with less than 64KB, aborting restore");
                 return;
             }
 

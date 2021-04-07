@@ -13,7 +13,7 @@ public class DeleteTask extends Task {
 
     @Override
     public void run() {
-        System.out.printf("Received DELETE for file %s\n", this.message.getFileId());
+        //System.out.printf("Received DELETE for file %s\n", this.message.getFileId());
 
         // Delete all corresponding fileId chunks after receiving DELETE message
         ConcurrentHashMap<String, Chunk> chunks = this.peer.getStorage().getStoredChunks();

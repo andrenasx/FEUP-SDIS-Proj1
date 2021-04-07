@@ -30,12 +30,8 @@ public class BackupChunkWorker implements Runnable {
             //System.out.println(String.format("Sent PUTCHUNK: chunk no: %d ; file: %s", putChunkMessage.chunkNo, putChunkMessage.fileId));
 
             int wait = (int) Math.pow(2, attempt) * 1000;
-            try {
-                Thread.sleep(wait);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        } while (++attempt < Utils.MAX_ATTEMPTS && this.chunk.needsReplication());
+            Utils.sleep(wait);
+        } while (++attempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication());
 
         this.chunk.clearBody();
     }

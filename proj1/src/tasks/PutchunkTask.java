@@ -15,11 +15,11 @@ public class PutchunkTask extends Task {
 
     @Override
     public void run() {
-        System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
+        //System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
 
         // Abort if it was a chunk this peer backed up or if this peer doesn't have enough space
         if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo()) || !this.peer.getStorage().hasEnoughSpace(this.message.getBody().length / 1000.0)) {
-            System.out.println(String.format("Aborting PUTCHUNK, my chunk or not enough space"));
+            System.out.println("Aborting PUTCHUNK, my chunk or not enough space");
             return;
         }
 
@@ -66,7 +66,7 @@ public class PutchunkTask extends Task {
                 this.peer.sendControlMessage(message);
                 //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
             } catch (IOException e) {
-                System.out.printf("Failed to store chunk %s\n", chunk.getUniqueId());
+                System.err.printf("Failed to store chunk %s\n", chunk.getUniqueId());
             }
         }
         // Else if already replicated remove from peer map

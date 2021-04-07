@@ -44,16 +44,16 @@ public class Chunk implements Serializable {
         return this.peersAcks.size();
     }
 
+    public int getDesiredReplicationDegree() {
+        return replicationDegree;
+    }
+
     public boolean needsReplication() {
         return this.peersAcks.size() < this.replicationDegree;
     }
 
     public boolean isOverReplicated() {
         return this.peersAcks.size() > this.replicationDegree;
-    }
-
-    public void clearBody() {
-        this.body = null;
     }
 
     public String getUniqueId() {
@@ -68,16 +68,16 @@ public class Chunk implements Serializable {
         return chunkNo;
     }
 
-    public int getDesiredReplicationDegree() {
-        return replicationDegree;
-    }
-
     public void setBody(byte[] body) {
         this.body = body;
     }
 
     public byte[] getBody() {
         return body;
+    }
+
+    public void clearBody() {
+        this.body = null;
     }
 
     public double getSize() {

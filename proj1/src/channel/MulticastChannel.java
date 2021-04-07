@@ -33,8 +33,10 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
             try {
                 this.receive(packet);
 
+                // Create respective message from received packet
                 Message message = Message.create(packet);
 
+                // Process message task if it was not sent by this peer
                 if (!message.messageOwner(this.peer.getId())) {
                     message.submitTask(this.peer);
                 }

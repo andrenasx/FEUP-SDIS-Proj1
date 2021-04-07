@@ -16,25 +16,26 @@ public class RemovedTask extends Task {
 
     @Override
     public void run() {
-        System.out.println(String.format("Received REMOVED: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
+        //System.out.println(String.format("Received REMOVED: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
 
-        Chunk chunk = null;
         // Remove peer acknowledge to received chunk
-        if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
-            chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
-            System.out.println("Removed ack for stored chunk no: " + this.message.getChunkNo());
-        }
-        else if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
-            chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
-            System.out.println("Removed ack for sent chunk no: " + this.message.getChunkNo());
-        }
-
-        if (chunk != null) {
+        if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
+            Chunk chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.removePeerAck(this.message.getSenderId());
+            //System.out.println("Removed ack for sent chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
+        }
+        else if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
+            Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
+            chunk.removePeerAck(this.message.getSenderId());
+            //System.out.println("Removed ack for stored chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
 
-            System.out.println(chunk.needsReplication() && chunk.isStoredLocally());
+            // Check if this peer has this chunk and it needs replication
             if (chunk.needsReplication() && chunk.isStoredLocally()) {
+
+                // Sleep to avoid collision in case another peer already replicated it
                 Utils.sleepRandom();
+
+                // If chunk still needs replication restore chunk body and start backup subprotocol
                 if (chunk.needsReplication()) {
                     try {
                         chunk.setBody(this.peer.getStorage().restoreChunkBody(chunk.getUniqueId()));
@@ -46,11 +47,8 @@ public class RemovedTask extends Task {
                     this.peer.submitBackupThread(worker);
                     System.out.printf("Submitted chunk %d of file %s\n", chunk.getChunkNo(), chunk.getFileId());
 
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                        System.out.println("Can't sleep");
-                    }
+                    // Sleep to make sure peer stores chunk before receiving this peer STORED message
+                    Utils.sleep(50);
 
                     StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
                     this.peer.sendControlMessage(message);

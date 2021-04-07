@@ -2,7 +2,6 @@ package client;
 
 import peer.PeerInit;
 
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -21,6 +20,7 @@ public class TestApp {
             Registry registry = LocateRegistry.getRegistry("localhost");
             peer = (PeerInit) registry.lookup(serviceAccessPoint);
 
+            // Parse arguments according to protocol
             switch (protocol) {
                 case "BACKUP": {
                     if (args.length != 4) {
@@ -41,12 +41,7 @@ public class TestApp {
                     }
 
                     String filepath = args[2];
-
-                    try {
-                        peer.restore(filepath);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    peer.restore(filepath);
 
                     break;
                 }
@@ -57,12 +52,7 @@ public class TestApp {
                     }
 
                     String filepath = args[2];
-
-                    try {
-                        peer.delete(filepath);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    peer.delete(filepath);
 
                     break;
                 }
@@ -73,12 +63,7 @@ public class TestApp {
                     }
 
                     double diskspace = Double.parseDouble(args[2]);
-
-                    try {
-                        peer.reclaim(diskspace);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    peer.reclaim(diskspace);
 
                     break;
                 }
@@ -88,11 +73,7 @@ public class TestApp {
                         return;
                     }
 
-                    try {
-                        System.out.println(peer.state());
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+                    System.out.println(peer.state());
 
                     break;
                 }

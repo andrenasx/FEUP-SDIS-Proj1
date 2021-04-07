@@ -15,7 +15,7 @@ public class GetChunkTask extends Task {
 
     @Override
     public void run() {
-        System.out.println("Received GETCHUNK from " + message.getSenderId() + " for chunk no " + message.getChunkNo());
+        //System.out.println("Received GETCHUNK from " + message.getSenderId() + " for chunk no " + message.getChunkNo());
 
         // Get corresponding stored chunk
         String chunkId = this.message.getFileId() + "_" + this.message.getChunkNo();
@@ -40,9 +40,9 @@ public class GetChunkTask extends Task {
 
                 ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.getFileId(), this.message.getChunkNo(), body);
                 this.peer.sendRestoreMessage(chunkMessage);
-                System.out.println("Sent CHUNK message, id:" + chunkId);
+                System.out.println("Sent CHUNK message for chunk :" + chunkId);
             } catch (IOException e) {
-                System.out.println("Unable to restore chunk, id:" + chunkId);
+                System.err.println("Unable to restore chunk, id:" + chunkId);
             }
         }
     }
