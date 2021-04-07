@@ -15,11 +15,11 @@ public class GetChunkTask extends Task {
 
     @Override
     public void run() {
-        System.out.println("Received GETCHUNK from " + message.senderId + " for chunk no " + message.chunkNo);
+        System.out.println("Received GETCHUNK from " + message.getSenderId() + " for chunk no " + message.getChunkNo());
 
         // Get corresponding stored chunk
-        String chunkId = this.message.fileId + "_" + this.message.chunkNo;
-        Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.fileId + "_" + this.message.chunkNo);
+        String chunkId = this.message.getFileId() + "_" + this.message.getChunkNo();
+        Chunk chunk = this.peer.getStorage().getStoredChunk(chunkId);
 
         // Abort if peer does not have chunk stored
         if (chunk == null || !chunk.isStoredLocally()) {
@@ -38,7 +38,7 @@ public class GetChunkTask extends Task {
                 // Get chunk body and send CHUNK message
                 byte[] body = this.peer.getStorage().restoreChunkBody(chunkId);
 
-                ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.fileId, this.message.chunkNo, body);
+                ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.getFileId(), this.message.getChunkNo(), body);
                 this.peer.sendRestoreMessage(chunkMessage);
                 System.out.println("Sent CHUNK message, id:" + chunkId);
             } catch (IOException e) {

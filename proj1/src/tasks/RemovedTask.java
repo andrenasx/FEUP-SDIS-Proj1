@@ -16,21 +16,21 @@ public class RemovedTask extends Task {
 
     @Override
     public void run() {
-        System.out.println(String.format("Received REMOVED: chunk no: %d ; file: %s", this.message.chunkNo, this.message.fileId));
+        System.out.println(String.format("Received REMOVED: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
 
         Chunk chunk = null;
         // Remove peer acknowledge to received chunk
-        if (this.peer.getStorage().hasStoredChunk(this.message.fileId, this.message.chunkNo)) {
-            chunk = this.peer.getStorage().getStoredChunk(this.message.fileId, this.message.chunkNo);
-            System.out.println("Removed ack for stored chunk no: " + this.message.chunkNo);
+        if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
+            chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
+            System.out.println("Removed ack for stored chunk no: " + this.message.getChunkNo());
         }
-        else if (this.peer.getStorage().hasSentChunk(this.message.fileId, this.message.chunkNo)) {
-            chunk = this.peer.getStorage().getSentChunk(this.message.fileId, this.message.chunkNo);
-            System.out.println("Removed ack for sent chunk no: " + this.message.chunkNo);
+        else if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
+            chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
+            System.out.println("Removed ack for sent chunk no: " + this.message.getChunkNo());
         }
 
         if (chunk != null) {
-            chunk.removePeerAck(this.message.senderId);
+            chunk.removePeerAck(this.message.getSenderId());
 
             System.out.println(chunk.needsReplication() && chunk.isStoredLocally());
             if (chunk.needsReplication() && chunk.isStoredLocally()) {
