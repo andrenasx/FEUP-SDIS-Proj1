@@ -1,3 +1,3 @@
-cd src
+cd scripts
 
-del /s /q *.class
+sh cleanup.sh
