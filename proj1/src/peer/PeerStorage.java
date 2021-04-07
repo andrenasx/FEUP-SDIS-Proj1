@@ -5,11 +5,9 @@ import storage.StorageFile;
 import utils.Utils;
 import workers.DeleteChunkWorker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +26,6 @@ public class PeerStorage implements Serializable {
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
         this.fileMap = new ConcurrentHashMap<>();
-
         this.storagePath = "../PeerStorage/Peer" + id + "/";
 
         // Create peer storage folder
@@ -39,6 +36,44 @@ public class PeerStorage implements Serializable {
         }
     }
 
+    public static PeerStorage loadStorage(Peer peer) {
+
+        PeerStorage storage = null;
+        try {
+            FileInputStream fileIn = new FileInputStream("../peer_storage/Peer" + peer.getId() + "/_state");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            storage = (PeerStorage) in.readObject();
+            in.close();
+            fileIn.close();
+        } catch (Exception e) {
+            System.out.println("Unable to load Peer storage information");
+        }
+        if (storage == null) storage=new PeerStorage(peer.getId());
+        else{
+            for(StorageFile file : storage.getFileMap().values()){
+                file.setPeer(peer);
+            }
+
+        }
+
+        return storage;
+    }
+
+    public synchronized void saveState() {
+        try {
+            FileOutputStream fileOut = new FileOutputStream(this.storagePath+"_state");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(this);
+            out.flush();
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            System.err.println("Unable to save Peer storage information");
+            System.err.println(i);
+        }
+    }
+
+
     public void storeChunk(Chunk chunk, byte[] body) throws IOException {
         // Write body to file
         FileOutputStream out = new FileOutputStream(this.storagePath + chunk.getUniqueId());
@@ -47,6 +82,7 @@ public class PeerStorage implements Serializable {
 
         this.occupySpace(chunk.getSize());
         System.out.println("[BACKUP] Stored chunk " + chunk.getUniqueId());
+        this.saveState();
     }
 
     public byte[] restoreChunkBody(String chunkId) throws IOException {
@@ -68,6 +104,7 @@ public class PeerStorage implements Serializable {
         else {
             System.err.printf("Error deleting chunk %s\n", chunk.getUniqueId());
         }
+        this.saveState();
     }
 
     public void deleteSentChunks(String fileId) {
@@ -77,6 +114,7 @@ public class PeerStorage implements Serializable {
                 this.sentChunks.remove(chunk.getUniqueId());
             }
         }
+        this.saveState();
     }
 
     public void reclaim(Peer peer, double maxKBytes) {
@@ -121,6 +159,9 @@ public class PeerStorage implements Serializable {
         }
     }
 
+
+
+
     public synchronized void occupySpace(double space) {
         this.occupiedSpace += space;
     }
@@ -151,6 +192,7 @@ public class PeerStorage implements Serializable {
 
     public void addSentChunk(Chunk chunk) {
         this.sentChunks.put(chunk.getUniqueId(), chunk);
+        this.saveState();
     }
 
     public Chunk getSentChunk(String chunkId) {
