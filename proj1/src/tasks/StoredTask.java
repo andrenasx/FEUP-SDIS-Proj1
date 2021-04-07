@@ -16,11 +16,13 @@ public class StoredTask extends Task {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.fileId, this.message.chunkNo);
             chunk.addPeerAck(this.message.senderId);
             System.out.println(String.format("Received STORED from peer %d chunk %d of file %s",this.message.senderId,chunk.getChunkNo(),chunk.getFileId()));
+            this.peer.getStorage().saveState();
         }
         else if (this.peer.getStorage().hasSentChunk(this.message.fileId, this.message.chunkNo)) {
             Chunk chunk = this.peer.getStorage().getSentChunk(this.message.fileId, this.message.chunkNo);
             chunk.addPeerAck(this.message.senderId);
             System.out.println(String.format("Received STORED from peer %d chunk %d of file %s",this.message.senderId,chunk.getChunkNo(),chunk.getFileId()));
+            this.peer.getStorage().saveState();
         }
     }
 }

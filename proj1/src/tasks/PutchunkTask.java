@@ -60,10 +60,12 @@ public class PutchunkTask extends Task {
                 // Acknowledge that chunk is stored and add it to peer ack Set
                 chunk.setStoredLocally(true);
                 chunk.addPeerAck(this.peer.getId());
+                this.peer.getStorage().saveState();
 
                 // Send stored message
                 StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
                 this.peer.sendControlMessage(message);
+
                 //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
             } catch (IOException e) {
                 System.out.printf("Failed to store chunk %s\n", chunk.getUniqueId());

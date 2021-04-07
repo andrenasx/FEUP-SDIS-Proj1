@@ -6,10 +6,7 @@ import workers.DeleteFileWorker;
 import workers.RestoreChunkWorker;
 import utils.Utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -20,8 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 
-public class StorageFile {
-    private final Peer peer;
+public class StorageFile implements Serializable {
+
+
+    private transient Peer peer;
     private final String filePath;
     private final String fileId;
     private final int replicationDegree;
@@ -77,6 +76,7 @@ public class StorageFile {
         }
 
         fileReader.close();
+
     }
 
     public void delete() {
@@ -142,5 +142,9 @@ public class StorageFile {
 
     public int getReplicationDegree() {
         return replicationDegree;
+    }
+
+    public void setPeer(Peer peer) {
+        this.peer = peer;
     }
 }

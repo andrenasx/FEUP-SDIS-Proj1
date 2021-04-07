@@ -40,7 +40,7 @@ public class Peer implements PeerInit {
         this.serviceAccessPoint = args[2];
 
         // Create Peer Internal State
-        storage = new PeerStorage(this.id);
+        storage = PeerStorage.loadStorage(this);
 
         // Create Channels
         mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);

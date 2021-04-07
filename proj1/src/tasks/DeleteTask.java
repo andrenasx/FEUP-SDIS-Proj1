@@ -22,5 +22,6 @@ public class DeleteTask extends Task {
                 this.peer.getStorage().deleteStoredChunk(chunk);
             }
         }
+        this.peer.getStorage().saveState();
     }
 }
