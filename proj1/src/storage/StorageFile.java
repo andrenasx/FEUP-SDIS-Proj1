@@ -18,13 +18,10 @@ import java.util.concurrent.Future;
 
 
 public class StorageFile implements Serializable {
-
-
     private transient Peer peer;
     private final String filePath;
     private final String fileId;
     private final int replicationDegree;
-    private static final int CHUNK_SIZE = 64000;
     private int num_chunks = 0;
 
     public StorageFile(Peer peer, String filePath, int replicationDegree) throws Exception {
@@ -46,9 +43,9 @@ public class StorageFile implements Serializable {
         int i = 0;
         for (int bytesRead = 0; bytesRead < fileSize; i++) {
             byte[] data;
-            if (fileSize - bytesRead >= CHUNK_SIZE) {
-                data = new byte[CHUNK_SIZE];
-                bytesRead += fileReader.read(data, 0, CHUNK_SIZE);
+            if (fileSize - bytesRead >= Utils.CHUNK_SIZE) {
+                data = new byte[Utils.CHUNK_SIZE];
+                bytesRead += fileReader.read(data, 0, Utils.CHUNK_SIZE);
             }
             else {
                 data = new byte[fileSize - bytesRead];
@@ -68,7 +65,7 @@ public class StorageFile implements Serializable {
         }
 
         // If the file size is a multiple of the chunk size, the last chunk has size 0
-        if (fileSize % CHUNK_SIZE == 0) {
+        if (fileSize % Utils.CHUNK_SIZE == 0) {
             Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
             this.peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
@@ -88,11 +85,11 @@ public class StorageFile implements Serializable {
         DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
         this.peer.submitControlThread(worker);
 
-        System.out.printf("\n[DELETION] Submitted delete for file: %s\n", this.fileId);
+        System.out.printf("[DELETION] Submitted delete for file: %s\n", this.fileId);
     }
 
     public void restore() throws Exception {
-        System.out.printf("\n[RESTORE] Initiated restore for file: %s\n", fileId);
+        System.out.printf("[RESTORE] Initiated restore for file: %s\n", fileId);
 
         List<Future<Chunk>> receivedChunks = new ArrayList<>();
 
@@ -124,14 +121,14 @@ public class StorageFile implements Serializable {
                 return;
             }
             // Abort if not the last chunk but body has less than 64KB
-            else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != CHUNK_SIZE) {
+            else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != Utils.CHUNK_SIZE) {
                 System.err.println("Not last chunk with less than 64KB, aborting restore");
                 return;
             }
 
             // Write body to respective position offset in file
             ByteBuffer buffer = ByteBuffer.wrap(chunk.getBody());
-            channel.write(buffer, (long) CHUNK_SIZE * chunk.getChunkNo());
+            channel.write(buffer, (long) Utils.CHUNK_SIZE * chunk.getChunkNo());
 
             // Clear Chunk body so we don't waste memory
             chunk.clearBody();
