@@ -20,6 +20,5 @@ public class DeleteChunkWorker implements Runnable {
         RemovedMessage removedMessage = new RemovedMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.chunk.getFileId(), this.chunk.getChunkNo());
         this.peer.sendControlMessage(removedMessage);
         //System.out.printf("Sent REMOVED for chunk %s\n", this.chunk.getUniqueId());
-        this.peer.getStorage().saveState();
     }
 }

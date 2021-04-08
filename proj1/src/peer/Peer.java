@@ -10,10 +10,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class Peer implements PeerInit {
     private final int id;
@@ -40,12 +37,12 @@ public class Peer implements PeerInit {
         this.serviceAccessPoint = args[2];
 
         // Create Peer Internal State
-        storage = PeerStorage.loadStorage(this);
+        this.storage = PeerStorage.loadStorage(this);
 
         // Create Channels
-        mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);
-        mdbChannel = new MulticastChannel(args[5], Integer.parseInt(args[6]), this);
-        mdrChannel = new MulticastChannel(args[7], Integer.parseInt(args[8]), this);
+        this.mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);
+        this.mdbChannel = new MulticastChannel(args[5], Integer.parseInt(args[6]), this);
+        this.mdrChannel = new MulticastChannel(args[7], Integer.parseInt(args[8]), this);
 
         // Create thread pools
         this.threadPoolMC = Executors.newFixedThreadPool(MAX_THREADS_C);
@@ -75,6 +72,11 @@ public class Peer implements PeerInit {
         (new Thread(peer.mcChannel)).start();
         (new Thread(peer.mdbChannel)).start();
         (new Thread(peer.mdrChannel)).start();
+
+        // Save peer storage periodically (every minute)
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(new Thread(peer.storage::saveState), 1, 1, TimeUnit.MINUTES);
+        Runtime.getRuntime().addShutdownHook(new Thread(peer.storage::saveState));
     }
 
     public void submitControlThread(Runnable action) {
