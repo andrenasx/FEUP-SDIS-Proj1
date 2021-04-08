@@ -18,21 +18,19 @@ import java.util.concurrent.Future;
 
 
 public class StorageFile implements Serializable {
-    private transient Peer peer;
     private final String filePath;
     private final String fileId;
     private final int replicationDegree;
     private int num_chunks = 0;
 
-    public StorageFile(Peer peer, String filePath, int replicationDegree) throws Exception {
-        this.peer = peer;
+    public StorageFile(String filePath, int replicationDegree) throws Exception {
         this.filePath = filePath;
         this.replicationDegree = replicationDegree;
 
         this.fileId = Utils.createFileId(filePath);
     }
 
-    public void backup() throws IOException {
+    public void backup(Peer peer) throws IOException {
         System.out.printf("\n[BACKUP] Initiated backup for file: %s\n", fileId);
 
         // Read file data, split chunks and send them
@@ -54,12 +52,12 @@ public class StorageFile implements Serializable {
 
             // Create new Chunk and add to peer storage sentChunk map
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
-            this.peer.getStorage().addSentChunk(chunk);
+            peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
             // Submit backup worker
-            BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
-            this.peer.submitBackupThread(worker);
+            BackupChunkWorker worker = new BackupChunkWorker(peer, chunk);
+            peer.submitBackupThread(worker);
 
             System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
@@ -67,11 +65,11 @@ public class StorageFile implements Serializable {
         // If the file size is a multiple of the chunk size, the last chunk has size 0
         if (fileSize % Utils.CHUNK_SIZE == 0) {
             Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
-            this.peer.getStorage().addSentChunk(chunk);
+            peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
-            BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
-            this.peer.submitBackupThread(worker);
+            BackupChunkWorker worker = new BackupChunkWorker(peer, chunk);
+            peer.submitBackupThread(worker);
 
             System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
@@ -80,25 +78,25 @@ public class StorageFile implements Serializable {
 
     }
 
-    public void delete() {
+    public void delete(Peer peer) {
         // Submit delete worker for this file
-        DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
-        this.peer.submitControlThread(worker);
+        DeleteFileWorker worker = new DeleteFileWorker(peer, this.fileId);
+        peer.submitControlThread(worker);
 
         System.out.printf("[DELETION] Submitted delete for file: %s\n", this.fileId);
     }
 
-    public void restore() throws Exception {
+    public void restore(Peer peer) throws Exception {
         System.out.printf("[RESTORE] Initiated restore for file: %s\n", fileId);
 
         List<Future<Chunk>> receivedChunks = new ArrayList<>();
 
         // Create a restore worker for each chunk of the file
-        ConcurrentHashMap<String, Chunk> sentChunks = this.peer.getStorage().getSentChunks();
+        ConcurrentHashMap<String, Chunk> sentChunks = peer.getStorage().getSentChunks();
         for (Chunk chunk : sentChunks.values()) {
             if (chunk.getFileId().equals(this.fileId)) {
-                RestoreChunkWorker worker = new RestoreChunkWorker(this.peer, chunk);
-                receivedChunks.add(this.peer.submitControlThread(worker));
+                RestoreChunkWorker worker = new RestoreChunkWorker(peer, chunk);
+                receivedChunks.add(peer.submitControlThread(worker));
                 System.out.printf("[RESTORE] Submitted restore for chunk: %s\n", chunk.getUniqueId());
             }
         }
@@ -151,9 +149,5 @@ public class StorageFile implements Serializable {
 
     public int getReplicationDegree() {
         return replicationDegree;
-    }
-
-    public void setPeer(Peer peer) {
-        this.peer = peer;
     }
 }

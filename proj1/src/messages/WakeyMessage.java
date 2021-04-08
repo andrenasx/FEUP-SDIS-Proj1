@@ -5,7 +5,7 @@ import tasks.WakeyTask;
 
 import java.nio.charset.StandardCharsets;
 
-public class WakeyMessage extends Message{
+public class WakeyMessage extends Message {
     public WakeyMessage(String protocolVersion, int senderId) {
         super(protocolVersion, "WakeyWakey", senderId, "wakey", -1, 0, null);
     }
@@ -20,6 +20,9 @@ public class WakeyMessage extends Message{
 
     @Override
     public void submitTask(Peer peer) {
+        // Peer doesn't know what is Wakey Wakey if it isn't enhanced, ignore
+        if (!peer.isEnhanced()) return;
+
         WakeyTask task = new WakeyTask(peer, this);
         peer.submitControlThread(task);
     }

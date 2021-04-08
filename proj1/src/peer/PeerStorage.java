@@ -51,12 +51,9 @@ public class PeerStorage implements Serializable {
         }
 
         if (storage == null) {
-            storage=new PeerStorage(peer.getId());
+            storage = new PeerStorage(peer.getId());
         }
-        else{
-            for(StorageFile file : storage.getStorageFileMap().values()){
-                file.setPeer(peer);
-            }
+        else {
             System.out.println("[STORAGE] Loaded Peer storage state from file successfully");
         }
 
@@ -276,13 +273,13 @@ public class PeerStorage implements Serializable {
         }
 
         sb.append("\n---Deleted Files---\n");
-        for (Map.Entry<String, Set<Integer>> entry :  this.deletedFilesMap.entrySet()) {
+        for (Map.Entry<String, Set<Integer>> entry : this.deletedFilesMap.entrySet()) {
             sb.append("FILE -> pathname: ")
                     .append(entry.getKey())
                     .append(" ; Peer acks: ");
-                    for(int id : entry.getValue()){
-                        sb.append(id).append("; ");
-                    }
+            for (int id : entry.getValue()) {
+                sb.append(id).append("; ");
+            }
             sb.append("\n");
         }
 

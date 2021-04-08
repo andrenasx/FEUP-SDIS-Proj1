@@ -76,7 +76,7 @@ public class Peer implements PeerInit {
         System.out.println(peer);
 
         // Send WakeyMessage (if enhanced) to alert other peers that this peer is online
-        if(peer.isEnhanced()){
+        if (peer.isEnhanced()) {
             // Sleep so we don't send DELETE for the same file at the same time
             Utils.sleepRandom();
 
@@ -142,8 +142,8 @@ public class Peer implements PeerInit {
     @Override
     public void backup(String filepath, int replicationDegree) {
         try {
-            StorageFile storageFile = new StorageFile(this, filepath, replicationDegree);
-            storageFile.backup();
+            StorageFile storageFile = new StorageFile(filepath, replicationDegree);
+            storageFile.backup(this);
             this.storage.getStorageFileMap().put(filepath, storageFile);
         } catch (Exception e) {
             System.err.println("Can't backup file " + filepath);
@@ -157,7 +157,7 @@ public class Peer implements PeerInit {
             System.err.println("Can't delete file " + filepath + ", not found");
             return;
         }
-        storageFile.delete();
+        storageFile.delete(this);
         this.storage.getStorageFileMap().remove(filepath);
     }
 
@@ -170,7 +170,7 @@ public class Peer implements PeerInit {
         }
 
         try {
-            storageFile.restore();
+            storageFile.restore(this);
         } catch (Exception e) {
             System.err.println("Error restoring file " + filepath);
         }
