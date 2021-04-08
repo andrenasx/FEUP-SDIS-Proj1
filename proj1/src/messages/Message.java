@@ -42,35 +42,43 @@ public abstract class Message {
         String protocolVersion = header[0];
         String messageType = header[1];
         int senderId = Integer.parseInt(header[2]);
-        String fileId = header[3];
 
         byte[] body = new byte[0];
         if (parts.length == 2)
             body = Arrays.copyOfRange(packet.getData(), headerBytes + 4, packet.getLength());
 
         // Estes campos podem nao existir
+        String fileId; // Nao existe no WakeyWakey
         int chunkNo;
         int replicationDeg;
 
         switch (messageType) {
             case "PUTCHUNK":
+                fileId = header[3];
                 chunkNo = Integer.parseInt(header[4]);
                 replicationDeg = Integer.parseInt(header[5]);
                 return new PutChunkMessage(protocolVersion, senderId, fileId, chunkNo, replicationDeg, body);
             case "STORED":
+                fileId = header[3];
                 chunkNo = Integer.parseInt(header[4]);
                 return new StoredMessage(protocolVersion, senderId, fileId, chunkNo);
             case "GETCHUNK":
+                fileId = header[3];
                 chunkNo = Integer.parseInt(header[4]);
                 return new GetChunkMessage(protocolVersion, senderId, fileId, chunkNo);
             case "CHUNK":
+                fileId = header[3];
                 chunkNo = Integer.parseInt(header[4]);
                 return new ChunkMessage(protocolVersion, senderId, fileId, chunkNo, body);
             case "DELETE":
+                fileId = header[3];
                 return new DeleteMessage(protocolVersion, senderId, fileId);
             case "REMOVED":
+                fileId = header[3];
                 chunkNo = Integer.parseInt(header[4]);
                 return new RemovedMessage(protocolVersion, senderId, fileId, chunkNo);
+            case "WakeyWakey":
+                return new WakeyMessage(protocolVersion, senderId);
             default:
                 throw new Exception("Unknown message type");
         }
