@@ -7,10 +7,15 @@ import storage.Chunk;
 import utils.Utils;
 
 import java.io.IOException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class PutchunkTask extends Task {
+    private final ScheduledThreadPoolExecutor scheduler;
+
     public PutchunkTask(Peer peer, PutChunkMessage message) {
         super(peer, message);
+        this.scheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     @Override
@@ -41,34 +46,18 @@ public class PutchunkTask extends Task {
             }
         }
 
-        // Sleep between 0-400 ms to avoid collisions
-        Utils.sleepRandom();
+        if(this.peer.isEnhanced()) {
+          this.scheduler.schedule(() -> this.storeChunkEn(chunk), Utils.getRandomEn(400,this.peer.getStorage().getOccupiedSpace(),this.peer.getStorage().getStorageCapacity()), TimeUnit.MILLISECONDS);
+        }
+        else{
+            this.scheduler.schedule(() -> this.storeChunk(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
+        }
+    }
 
+    private void storeChunkEn(Chunk chunk){
         // If received chunk still needs replication add it to peer map and acknowledge it
         if (chunk.needsReplication()) {
-            // Check if peer has enough space to store chunk
-            if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
-                System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
-                this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
-                return;
-            }
-
-            try {
-                // Store chunk in file
-                this.peer.getStorage().storeChunk(chunk, this.message.getBody());
-
-                // Acknowledge that chunk is stored and add it to peer ack Set
-                chunk.setStoredLocally(true);
-                chunk.addPeerAck(this.peer.getId());
-
-                // Send stored message
-                StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
-                this.peer.sendControlMessage(message);
-
-                //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
-            } catch (IOException e) {
-                System.err.printf("Failed to store chunk %s\n", chunk.getUniqueId());
-            }
+            this.storeChunk(chunk);
         }
         // Else if already replicated remove from peer map
         else {
@@ -76,4 +65,38 @@ public class PutchunkTask extends Task {
             //System.out.println(String.format("Chunk No: %d of file: %s is already completely replicated", c.getChunkNo(), c.getFileId()));
         }
     }
+
+
+
+    private void storeChunk(Chunk chunk){
+        // Sleep between 0-400 ms to avoid collisions
+
+        // Check if peer has enough space to store chunk
+        if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
+            System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
+            this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
+            return;
+        }
+
+        try {
+            // Store chunk in file
+            this.peer.getStorage().storeChunk(chunk, this.message.getBody());
+
+            // Acknowledge that chunk is stored and add it to peer ack Set
+            chunk.setStoredLocally(true);
+            chunk.addPeerAck(this.peer.getId());
+
+            // Send stored message
+            StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
+            this.peer.sendControlMessage(message);
+
+            //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
+        } catch (IOException e) {
+            System.err.printf("Failed to store chunk %s\n", chunk.getUniqueId());
+        }
+    }
+
+
+
+
 }

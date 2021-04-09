@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -19,15 +20,6 @@ public class Utils {
     public static void sleep(int millis){
         try {
             Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            System.err.println("Can't sleep");
-        }
-    }
-
-    public static void sleepRandom() {
-        try {
-            int sleepFor = ThreadLocalRandom.current().nextInt(0, 401);
-            Thread.sleep(sleepFor);
         } catch (InterruptedException e) {
             System.err.println("Can't sleep");
         }
@@ -53,4 +45,14 @@ public class Utils {
         // chunkId like <fileId>_<chunkNo>, splits so we compare fileId
         return fileId.equals(chunkId.split("_")[0]);
     }
+
+    public static int getRandom(int max) {
+        return new Random().nextInt(max + 1);
+    }
+
+    public static int getRandomEn(int max, double occupiedSpace, double maxSpace){
+        int lowerBound = (int) (max*(occupiedSpace/maxSpace));
+        return new Random().nextInt(max-lowerBound+1) + lowerBound;
+    }
+
 }

@@ -292,4 +292,8 @@ public class PeerStorage implements Serializable {
 
         return sb.toString();
     }
+
+    public double getOccupiedSpace() {
+        return occupiedSpace;
+    }
 }
