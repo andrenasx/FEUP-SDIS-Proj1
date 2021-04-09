@@ -1,14 +1,12 @@
 package storage;
 
 import peer.Peer;
+import utils.Utils;
 import workers.BackupChunkWorker;
 import workers.DeleteFileWorker;
 import workers.RestoreChunkWorker;
-import utils.Utils;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public class StorageFile implements Serializable {
     }
 
     public void backup(Peer peer) throws IOException {
-        System.out.printf("\n[BACKUP] Initiated backup for file: %s\n", fileId);
+        System.out.printf("[BACKUP] Initiated backup for file: %s\n", fileId);
 
         // Read file data, split chunks and send them
         File file = new File(this.filePath);
@@ -108,31 +106,32 @@ public class StorageFile implements Serializable {
 
         // Open channel to write information
         RandomAccessFile raf = new RandomAccessFile(restoredFilePath, "rw");
-        FileChannel channel = raf.getChannel();
 
         for (Future<Chunk> chunkFuture : receivedChunks) {
             Chunk chunk = chunkFuture.get();
 
             // Abort if chunk or its body is null
             if (chunk == null || chunk.getBody() == null) {
-                System.err.println("Error retrieving chunk, aborting restore");
+                System.err.println("[!RESTORE] Error retrieving chunk, aborting restore");
+                raf.close();
                 return;
             }
             // Abort if not the last chunk but body has less than 64KB
             else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != Utils.CHUNK_SIZE) {
-                System.err.println("Not last chunk with less than 64KB, aborting restore");
+                System.err.println("[!RESTORE] Not last chunk with less than 64KB, aborting restore");
+                chunk.clearBody();
+                raf.close();
                 return;
             }
 
             // Write body to respective position offset in file
-            ByteBuffer buffer = ByteBuffer.wrap(chunk.getBody());
-            channel.write(buffer, (long) Utils.CHUNK_SIZE * chunk.getChunkNo());
+            raf.seek((long) Utils.CHUNK_SIZE * chunk.getChunkNo());
+            raf.write(chunk.getBody());
 
             // Clear Chunk body so we don't waste memory
             chunk.clearBody();
         }
 
-        channel.close();
         raf.close();
 
         System.out.printf("[RESTORE] Finished restore for file %s\n", this.fileId);
