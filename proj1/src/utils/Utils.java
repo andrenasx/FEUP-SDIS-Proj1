@@ -29,15 +29,6 @@ public class Utils {
         }
     }
 
-    public static void sleepRandom() {
-        try {
-            int sleepFor = ThreadLocalRandom.current().nextInt(0, 401);
-            Thread.sleep(sleepFor);
-        } catch (InterruptedException e) {
-            System.err.println("Can't sleep");
-        }
-    }
-
     public static String createFileId(String filePath) throws IOException, NoSuchAlgorithmException {
         // Create string from file metadata
         String bitstring = filePath;
@@ -58,4 +49,14 @@ public class Utils {
         // chunkId like <fileId>_<chunkNo>, splits so we compare fileId
         return fileId.equals(chunkId.split("_")[0]);
     }
+
+    public static int getRandom(int max) {
+        return new Random().nextInt(max + 1);
+    }
+
+    public static int getRandomEn(int max, double occupiedSpace, double maxSpace){
+        int lowerBound = (int) (max*(occupiedSpace/maxSpace));
+        return new Random().nextInt(max-lowerBound+1) + lowerBound;
+    }
+
 }
