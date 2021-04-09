@@ -40,6 +40,10 @@ public class Chunk implements Serializable {
         this.peersAcks.remove(peerId);
     }
 
+    public Set<Integer> getPeersAcks() {
+        return this.peersAcks;
+    }
+
     public int getNumberPeersAcks() {
         return this.peersAcks.size();
     }

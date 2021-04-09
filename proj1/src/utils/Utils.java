@@ -12,8 +12,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     public static final int CRLF = 0xDA;
-    public static int MAX_5_ATTEMPTS = 5;
-    public static int MAX_3_ATTEMPTS = 3;
+    public static final int MAX_5_ATTEMPTS = 5;
+    public static final int MAX_3_ATTEMPTS = 3;
+    public static final int CHUNK_SIZE = 64000;
 
     public static void sleep(int millis){
         try {

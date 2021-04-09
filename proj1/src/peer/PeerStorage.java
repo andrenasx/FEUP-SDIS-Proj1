@@ -9,6 +9,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PeerStorage implements Serializable {
@@ -16,7 +17,8 @@ public class PeerStorage implements Serializable {
     private double occupiedSpace;
     private final ConcurrentHashMap<String, Chunk> storedChunks;
     private final ConcurrentHashMap<String, Chunk> sentChunks;
-    private final ConcurrentHashMap<String, StorageFile> fileMap;
+    private final ConcurrentHashMap<String, StorageFile> storageFileMap;
+    private final ConcurrentHashMap<String, Set<Integer>> deletedFilesMap;
     private final String storagePath;
 
     public PeerStorage(int id) {
@@ -24,7 +26,8 @@ public class PeerStorage implements Serializable {
         this.occupiedSpace = 0;
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
-        this.fileMap = new ConcurrentHashMap<>();
+        this.storageFileMap = new ConcurrentHashMap<>();
+        this.deletedFilesMap = new ConcurrentHashMap<>();
         this.storagePath = "../PeerStorage/Peer" + id + "/";
 
         // Create peer storage folder
@@ -35,8 +38,7 @@ public class PeerStorage implements Serializable {
         }
     }
 
-    public static PeerStorage loadStorage(Peer peer) {
-
+    public static PeerStorage loadState(Peer peer) {
         PeerStorage storage = null;
         try {
             FileInputStream fileIn = new FileInputStream("../PeerStorage/Peer" + peer.getId() + "/_state");
@@ -47,11 +49,11 @@ public class PeerStorage implements Serializable {
         } catch (Exception e) {
             System.out.println("[STORAGE] Unable to load Peer storage state from file");
         }
-        if (storage == null) storage=new PeerStorage(peer.getId());
-        else{
-            for(StorageFile file : storage.getFileMap().values()){
-                file.setPeer(peer);
-            }
+
+        if (storage == null) {
+            storage = new PeerStorage(peer.getId());
+        }
+        else {
             System.out.println("[STORAGE] Loaded Peer storage state from file successfully");
         }
 
@@ -105,12 +107,19 @@ public class PeerStorage implements Serializable {
     }
 
     public void deleteSentChunks(String fileId) {
+        if (this.deletedFilesMap.containsKey(fileId)) return;
+
+        Set<Integer> deletedFileAcks = ConcurrentHashMap.newKeySet();
+
         // Delete all sent chunks with given fileId
         for (Chunk chunk : this.sentChunks.values()) {
             if (chunk.getFileId().equals(fileId)) {
+                deletedFileAcks.addAll(chunk.getPeersAcks());
                 this.sentChunks.remove(chunk.getUniqueId());
             }
         }
+
+        this.deletedFilesMap.put(fileId, deletedFileAcks);
     }
 
     public void reclaim(Peer peer, double maxKBytes) {
@@ -220,8 +229,12 @@ public class PeerStorage implements Serializable {
         return this.sentChunks;
     }
 
-    public ConcurrentHashMap<String, StorageFile> getFileMap() {
-        return fileMap;
+    public ConcurrentHashMap<String, StorageFile> getStorageFileMap() {
+        return storageFileMap;
+    }
+
+    public ConcurrentHashMap<String, Set<Integer>> getDeletedFilesMap() {
+        return deletedFilesMap;
     }
 
     public double getStorageCapacity() {
@@ -237,7 +250,7 @@ public class PeerStorage implements Serializable {
         StringBuilder sb = new StringBuilder();
 
         sb.append("---Backed up Files---\n");
-        for (StorageFile storageFile : this.fileMap.values()) {
+        for (StorageFile storageFile : this.storageFileMap.values()) {
             sb.append("FILE -> pathname: ")
                     .append(storageFile.getFilePath())
                     .append(" ; id: ")
@@ -257,6 +270,17 @@ public class PeerStorage implements Serializable {
         sb.append("\n---Stored Chunks---\n");
         for (Chunk chunk : this.storedChunks.values()) {
             sb.append(chunk.toStringStored()).append("\n");
+        }
+
+        sb.append("\n---Deleted Files---\n");
+        for (Map.Entry<String, Set<Integer>> entry : this.deletedFilesMap.entrySet()) {
+            sb.append("FILE -> pathname: ")
+                    .append(entry.getKey())
+                    .append(" ; Peer acks: ");
+            for (int id : entry.getValue()) {
+                sb.append(id).append("; ");
+            }
+            sb.append("\n");
         }
 
         sb.append("\n---Storage---\n")

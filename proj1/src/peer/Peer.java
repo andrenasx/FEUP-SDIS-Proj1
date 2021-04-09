@@ -4,6 +4,7 @@ import channel.MulticastChannel;
 import messages.Message;
 import storage.Chunk;
 import storage.StorageFile;
+import workers.WakeyWorker;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -37,7 +38,7 @@ public class Peer implements PeerInit {
         this.serviceAccessPoint = args[2];
 
         // Create Peer Internal State
-        this.storage = PeerStorage.loadStorage(this);
+        this.storage = PeerStorage.loadState(this);
 
         // Create Channels
         this.mcChannel = new MulticastChannel(args[3], Integer.parseInt(args[4]), this);
@@ -61,8 +62,6 @@ public class Peer implements PeerInit {
         /*PrintStream fileStream = new PrintStream("peer" + peer.id + ".txt");
         System.setOut(fileStream);*/
 
-        System.out.println(peer);
-
         // Start RMI
         PeerInit stub = (PeerInit) UnicastRemoteObject.exportObject(peer, 0);
         Registry registry = LocateRegistry.getRegistry();
@@ -72,6 +71,13 @@ public class Peer implements PeerInit {
         (new Thread(peer.mcChannel)).start();
         (new Thread(peer.mdbChannel)).start();
         (new Thread(peer.mdrChannel)).start();
+
+        System.out.println(peer);
+
+        // Send WakeyMessage (if enhanced) to alert other peers that this peer is online
+        if (peer.isEnhanced()) {
+            peer.threadPoolMC.submit(new WakeyWorker(peer));
+        }
 
         // Save peer storage periodically (every minute)
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -119,24 +125,21 @@ public class Peer implements PeerInit {
         return this.storage;
     }
 
+    public boolean isEnhanced() {
+        return !this.protocolVersion.equals("1.0");
+    }
+
     @Override
     public String toString() {
-        return "Peer{" +
-                "protocolVersion='" + protocolVersion + '\'' +
-                ", id=" + id +
-                ", serviceAccessPoint='" + serviceAccessPoint + '\'' +
-                ", mcChannel=" + mcChannel +
-                ", mdbChannel=" + mdbChannel +
-                ", mdrChannel=" + mdrChannel +
-                '}';
+        return String.format("[PEER] Peer %d with version %s is Online", this.id, this.protocolVersion);
     }
 
     @Override
     public void backup(String filepath, int replicationDegree) {
         try {
-            StorageFile storageFile = new StorageFile(this, filepath, replicationDegree);
-            storageFile.backup();
-            this.storage.getFileMap().put(filepath, storageFile);
+            StorageFile storageFile = new StorageFile(filepath, replicationDegree);
+            storageFile.backup(this);
+            this.storage.getStorageFileMap().put(filepath, storageFile);
         } catch (Exception e) {
             System.err.println("Can't backup file " + filepath);
         }
@@ -144,25 +147,25 @@ public class Peer implements PeerInit {
 
     @Override
     public void delete(String filepath) {
-        StorageFile storageFile = this.storage.getFileMap().get(filepath);
+        StorageFile storageFile = this.storage.getStorageFileMap().get(filepath);
         if (storageFile == null) {
             System.err.println("Can't delete file " + filepath + ", not found");
             return;
         }
-        storageFile.delete();
-        this.storage.getFileMap().remove(filepath);
+        storageFile.delete(this);
+        this.storage.getStorageFileMap().remove(filepath);
     }
 
     @Override
     public void restore(String filepath) throws RemoteException {
-        StorageFile storageFile = this.storage.getFileMap().get(filepath);
+        StorageFile storageFile = this.storage.getStorageFileMap().get(filepath);
         if (storageFile == null) {
             System.err.println("Can't restore file " + filepath + ", not found");
             return;
         }
 
         try {
-            storageFile.restore();
+            storageFile.restore(this);
         } catch (Exception e) {
             System.err.println("Error restoring file " + filepath);
         }

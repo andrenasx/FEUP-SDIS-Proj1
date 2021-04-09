@@ -18,25 +18,21 @@ import java.util.concurrent.Future;
 
 
 public class StorageFile implements Serializable {
-
-
-    private transient Peer peer;
     private final String filePath;
     private final String fileId;
     private final int replicationDegree;
-    private static final int CHUNK_SIZE = 64000;
     private int num_chunks = 0;
 
-    public StorageFile(Peer peer, String filePath, int replicationDegree) throws Exception {
-        this.peer = peer;
+    public StorageFile(String filePath, int replicationDegree) throws Exception {
         this.filePath = filePath;
         this.replicationDegree = replicationDegree;
 
         this.fileId = Utils.createFileId(filePath);
     }
 
-    public void backup() throws IOException {
+    public void backup(Peer peer) throws IOException {
         System.out.printf("\n[BACKUP] Initiated backup for file: %s\n", fileId);
+        peer.getStorage().getDeletedFilesMap().remove(fileId);
 
         // Read file data, split chunks and send them
         File file = new File(this.filePath);
@@ -46,9 +42,9 @@ public class StorageFile implements Serializable {
         int i = 0;
         for (int bytesRead = 0; bytesRead < fileSize; i++) {
             byte[] data;
-            if (fileSize - bytesRead >= CHUNK_SIZE) {
-                data = new byte[CHUNK_SIZE];
-                bytesRead += fileReader.read(data, 0, CHUNK_SIZE);
+            if (fileSize - bytesRead >= Utils.CHUNK_SIZE) {
+                data = new byte[Utils.CHUNK_SIZE];
+                bytesRead += fileReader.read(data, 0, Utils.CHUNK_SIZE);
             }
             else {
                 data = new byte[fileSize - bytesRead];
@@ -57,24 +53,24 @@ public class StorageFile implements Serializable {
 
             // Create new Chunk and add to peer storage sentChunk map
             Chunk chunk = new Chunk(this.fileId, i, this.replicationDegree, data);
-            this.peer.getStorage().addSentChunk(chunk);
+            peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
             // Submit backup worker
-            BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
-            this.peer.submitBackupThread(worker);
+            BackupChunkWorker worker = new BackupChunkWorker(peer, chunk);
+            peer.submitBackupThread(worker);
 
             System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
 
         // If the file size is a multiple of the chunk size, the last chunk has size 0
-        if (fileSize % CHUNK_SIZE == 0) {
+        if (fileSize % Utils.CHUNK_SIZE == 0) {
             Chunk chunk = new Chunk(this.fileId, ++i, this.replicationDegree, new byte[0]);
-            this.peer.getStorage().addSentChunk(chunk);
+            peer.getStorage().addSentChunk(chunk);
             this.num_chunks++;
 
-            BackupChunkWorker worker = new BackupChunkWorker(this.peer, chunk);
-            this.peer.submitBackupThread(worker);
+            BackupChunkWorker worker = new BackupChunkWorker(peer, chunk);
+            peer.submitBackupThread(worker);
 
             System.out.printf("[BACKUP] Submitted backup for chunk: %s_%d\n", fileId, i);
         }
@@ -83,25 +79,25 @@ public class StorageFile implements Serializable {
 
     }
 
-    public void delete() {
+    public void delete(Peer peer) {
         // Submit delete worker for this file
-        DeleteFileWorker worker = new DeleteFileWorker(this.peer, this.fileId);
-        this.peer.submitControlThread(worker);
+        DeleteFileWorker worker = new DeleteFileWorker(peer, this.fileId);
+        peer.submitControlThread(worker);
 
-        System.out.printf("\n[DELETION] Submitted delete for file: %s\n", this.fileId);
+        System.out.printf("[DELETION] Submitted delete for file: %s\n", this.fileId);
     }
 
-    public void restore() throws Exception {
-        System.out.printf("\n[RESTORE] Initiated restore for file: %s\n", fileId);
+    public void restore(Peer peer) throws Exception {
+        System.out.printf("[RESTORE] Initiated restore for file: %s\n", fileId);
 
         List<Future<Chunk>> receivedChunks = new ArrayList<>();
 
         // Create a restore worker for each chunk of the file
-        ConcurrentHashMap<String, Chunk> sentChunks = this.peer.getStorage().getSentChunks();
+        ConcurrentHashMap<String, Chunk> sentChunks = peer.getStorage().getSentChunks();
         for (Chunk chunk : sentChunks.values()) {
             if (chunk.getFileId().equals(this.fileId)) {
-                RestoreChunkWorker worker = new RestoreChunkWorker(this.peer, chunk);
-                receivedChunks.add(this.peer.submitControlThread(worker));
+                RestoreChunkWorker worker = new RestoreChunkWorker(peer, chunk);
+                receivedChunks.add(peer.submitControlThread(worker));
                 System.out.printf("[RESTORE] Submitted restore for chunk: %s\n", chunk.getUniqueId());
             }
         }
@@ -124,14 +120,14 @@ public class StorageFile implements Serializable {
                 return;
             }
             // Abort if not the last chunk but body has less than 64KB
-            else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != CHUNK_SIZE) {
+            else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != Utils.CHUNK_SIZE) {
                 System.err.println("Not last chunk with less than 64KB, aborting restore");
                 return;
             }
 
             // Write body to respective position offset in file
             ByteBuffer buffer = ByteBuffer.wrap(chunk.getBody());
-            channel.write(buffer, (long) CHUNK_SIZE * chunk.getChunkNo());
+            channel.write(buffer, (long) Utils.CHUNK_SIZE * chunk.getChunkNo());
 
             // Clear Chunk body so we don't waste memory
             chunk.clearBody();
@@ -154,9 +150,5 @@ public class StorageFile implements Serializable {
 
     public int getReplicationDegree() {
         return replicationDegree;
-    }
-
-    public void setPeer(Peer peer) {
-        this.peer = peer;
     }
 }
