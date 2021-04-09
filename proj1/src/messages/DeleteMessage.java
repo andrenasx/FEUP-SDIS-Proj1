@@ -10,6 +10,13 @@ public class DeleteMessage extends Message {
         super(protocolVersion, "DELETE", senderId, fileId, -1, 0, null);
     }
 
+    public static DeleteMessage create(byte[] data) {
+        String message = new String(data);
+        String[] parts = message.split(" ", 5);
+
+        return new DeleteMessage(parts[0], Integer.parseInt(parts[2]), parts[3]);
+    }
+
     @Override
     public byte[] encode() {
         return String.format("%s %s %d %s \r\n\r\n",
