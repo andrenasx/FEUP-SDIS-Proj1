@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -16,7 +17,11 @@ public class Utils {
     public static final int MAX_3_ATTEMPTS = 3;
     public static final int CHUNK_SIZE = 64000;
 
-    public static void sleep(int millis){
+    public static int getRandom(int max) {
+        return new Random().nextInt(max + 1);
+    }
+
+    public static void sleep(int millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {

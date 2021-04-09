@@ -119,4 +119,8 @@ public abstract class Message {
     public byte[] getBody() {
         return body;
     }
+
+    public boolean isEnhanced() {
+        return !this.protocolVersion.equals("1.0");
+    }
 }
