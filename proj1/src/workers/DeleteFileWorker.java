@@ -23,22 +23,19 @@ public class DeleteFileWorker implements Runnable {
         DeleteMessage deleteMessage = new DeleteMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.fileId);
 
         // Try to send DELETE message max 3 times
-        int attempt = 0;
-        this.scheduler.schedule(() -> this.sendDeleteMessage(deleteMessage, attempt), (int) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
+        this.scheduler.submit(() -> this.sendDeleteMessage(deleteMessage, 0));
     }
 
-    private void sendDeleteMessage(DeleteMessage deleteMessage, int attempt){
-        this.peer.sendControlMessage(deleteMessage);
+    private void sendDeleteMessage(DeleteMessage deleteMessage, int attempt) {
+        if (attempt < Utils.MAX_3_ATTEMPTS) {
+            this.peer.sendControlMessage(deleteMessage);
+            //System.out.printf("Sent DELETE for chunk %s\n", this.chunk.getUniqueId());
 
-        if(attempt<Utils.MAX_3_ATTEMPTS) {
             int finalAttempt = ++attempt;
-            this.scheduler.schedule(() -> this.sendDeleteMessage(deleteMessage, finalAttempt), (int) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
+            this.scheduler.schedule(() -> this.sendDeleteMessage(deleteMessage, finalAttempt), (long) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
         }
-        else{
+        else {
             this.peer.getStorage().deleteSentChunks(this.fileId);
         }
-
     }
-
-
 }

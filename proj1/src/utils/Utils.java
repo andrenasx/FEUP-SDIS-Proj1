@@ -9,7 +9,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     public static final int CRLF = 0xDA;
@@ -19,6 +18,11 @@ public class Utils {
 
     public static int getRandom(int max) {
         return new Random().nextInt(max + 1);
+    }
+
+    public static int getRandomEn(int max, double occupiedSpace, double maxSpace) {
+        int lowerBound = (int) (max * (occupiedSpace / maxSpace));
+        return new Random().nextInt(max - lowerBound + 1) + lowerBound;
     }
 
     public static void sleep(int millis) {
@@ -49,14 +53,4 @@ public class Utils {
         // chunkId like <fileId>_<chunkNo>, splits so we compare fileId
         return fileId.equals(chunkId.split("_")[0]);
     }
-
-    public static int getRandom(int max) {
-        return new Random().nextInt(max + 1);
-    }
-
-    public static int getRandomEn(int max, double occupiedSpace, double maxSpace){
-        int lowerBound = (int) (max*(occupiedSpace/maxSpace));
-        return new Random().nextInt(max-lowerBound+1) + lowerBound;
-    }
-
 }

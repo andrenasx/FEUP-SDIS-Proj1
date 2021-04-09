@@ -1,6 +1,5 @@
 package workers;
 
-import messages.DeleteMessage;
 import messages.PutChunkMessage;
 import peer.Peer;
 import storage.Chunk;
@@ -28,23 +27,20 @@ public class BackupChunkWorker implements Runnable {
         }
 
         PutChunkMessage putChunkMessage = new PutChunkMessage(this.peer, this.chunk);
-        int attempt=0;
         // Try to send PUTCHUNK message max 5 times or until Replication degree is met
-        this.scheduler.schedule(() -> this.sendPutChunk(putChunkMessage, attempt), (int) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
+        this.scheduler.submit(() -> this.sendPutchunkMessage(putChunkMessage, 0));
     }
 
-    private void sendPutChunk(PutChunkMessage putChunkMessage, int attempt){
-        this.peer.sendBackupMessage(putChunkMessage);
+    private void sendPutchunkMessage(PutChunkMessage putChunkMessage, int attempt) {
+        if (attempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {
+            this.peer.sendBackupMessage(putChunkMessage);
+            //System.out.printf("Sent PUTCHUNK for chunk %s\n", this.chunk.getUniqueId());
 
-        if(attempt<Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {
             int finalAttempt = ++attempt;
-            this.scheduler.schedule(() -> this.sendPutChunk(putChunkMessage, finalAttempt), (int) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
+            this.scheduler.schedule(() -> this.sendPutchunkMessage(putChunkMessage, finalAttempt), (long) Math.pow(2, ++attempt) * 1000, TimeUnit.MILLISECONDS);
         }
-        else{
+        else {
             this.chunk.clearBody();
         }
-
     }
-
-
 }
