@@ -78,11 +78,10 @@ public abstract class Message {
                 chunkNo = Integer.parseInt(header[4]);
                 return new RemovedMessage(protocolVersion, senderId, fileId, chunkNo);
             case "WakeyWakey":
-                return new WakeyMessage(protocolVersion, senderId);
+                return new WakeyMessage(protocolVersion, senderId, body);
             default:
                 throw new Exception("Unknown message type");
         }
-
     }
 
     public abstract byte[] encode();

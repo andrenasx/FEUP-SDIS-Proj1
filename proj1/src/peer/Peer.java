@@ -2,10 +2,9 @@ package peer;
 
 import channel.MulticastChannel;
 import messages.Message;
-import messages.WakeyMessage;
 import storage.Chunk;
 import storage.StorageFile;
-import utils.Utils;
+import workers.WakeyWorker;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -77,11 +76,7 @@ public class Peer implements PeerInit {
 
         // Send WakeyMessage (if enhanced) to alert other peers that this peer is online
         if (peer.isEnhanced()) {
-            // Sleep so we don't send DELETE for the same file at the same time
-            Utils.sleepRandom();
-
-            WakeyMessage message = new WakeyMessage(peer.getProtocolVersion(), peer.getId());
-            peer.sendControlMessage(message);
+            peer.threadPoolMC.submit(new WakeyWorker(peer));
         }
 
         // Save peer storage periodically (every minute)

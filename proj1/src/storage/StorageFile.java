@@ -32,6 +32,7 @@ public class StorageFile implements Serializable {
 
     public void backup(Peer peer) throws IOException {
         System.out.printf("\n[BACKUP] Initiated backup for file: %s\n", fileId);
+        peer.getStorage().getDeletedFilesMap().remove(fileId);
 
         // Read file data, split chunks and send them
         File file = new File(this.filePath);
