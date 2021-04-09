@@ -82,7 +82,6 @@ public abstract class Message {
             default:
                 throw new Exception("Unknown message type");
         }
-
     }
 
     public abstract byte[] encode();
@@ -119,5 +118,9 @@ public abstract class Message {
 
     public byte[] getBody() {
         return body;
+    }
+
+    public boolean isEnhanced() {
+        return !this.protocolVersion.equals("1.0");
     }
 }
