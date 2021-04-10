@@ -29,7 +29,7 @@ public class Chunk implements Serializable {
         this.id = fileId + "_" + chunkNo;
         this.replicationDegree = replicationDegree;
         this.body = body;
-        if (body != null) this.size = body.length / 1000.0;
+        if (body != null) this.size = body.length;
     }
 
     public void addPeerAck(int peerId) {
@@ -117,6 +117,6 @@ public class Chunk implements Serializable {
     }
 
     public String toStringStored() {
-        return "CHUNK -> id: " + id + " ; size: " + size + " KBytes ; desired replication degree: " + replicationDegree + " ; perceived replication degree: " + peersAcks.size();
+        return "CHUNK -> id: " + id + " ; size: " + (size / 1000.0) + " KBytes ; desired replication degree: " + replicationDegree + " ; perceived replication degree: " + peersAcks.size();
     }
 }

@@ -22,7 +22,7 @@ public class PeerStorage implements Serializable {
     private final String storagePath;
 
     public PeerStorage(int id) {
-        this.storageCapacity = 100000; // 100000 KB
+        this.storageCapacity = 100000000; // 100 MBytes
         this.occupiedSpace = 0;
         this.storedChunks = new ConcurrentHashMap<>();
         this.sentChunks = new ConcurrentHashMap<>();
@@ -241,6 +241,10 @@ public class PeerStorage implements Serializable {
         return storageCapacity;
     }
 
+    public double getOccupiedSpace() {
+        return occupiedSpace;
+    }
+
     public String getStoragePath() {
         return storagePath;
     }
@@ -284,13 +288,9 @@ public class PeerStorage implements Serializable {
         }
 
         sb.append("\n---Storage---\n")
-                .append("Maximum capacity: ").append(this.storageCapacity).append(" KBytes\n")
-                .append("Occupied space: ").append(this.occupiedSpace).append(" KBytes\n");
+                .append("Maximum capacity: ").append(this.storageCapacity / 1000.0).append(" KBytes\n")
+                .append("Occupied space: ").append(this.occupiedSpace / 1000.0).append(" KBytes\n");
 
         return sb.toString();
-    }
-
-    public double getOccupiedSpace() {
-        return occupiedSpace;
     }
 }
