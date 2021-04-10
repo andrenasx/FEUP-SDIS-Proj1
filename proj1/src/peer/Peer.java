@@ -52,20 +52,29 @@ public class Peer implements PeerInit {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length != 9) {
             System.out.println("Usage: java Peer <protocolVersion> <peerId> <serviceAccessPoint> <mcAddress> <mcPort> <mdbAddress> <mdbPort> <mdrAddress> <mdrPort>");
             return;
         }
 
-        Peer peer = new Peer(args);
-        /*PrintStream fileStream = new PrintStream("peer" + peer.id + ".txt");
-        System.setOut(fileStream);*/
+        // Create Peer
+        Peer peer = null;
+        try {
+            peer = new Peer(args);
+        } catch (IOException e) {
+            System.err.println("Error creating Peer");
+            return;
+        }
 
         // Start RMI
-        PeerInit stub = (PeerInit) UnicastRemoteObject.exportObject(peer, 0);
-        Registry registry = LocateRegistry.getRegistry();
-        registry.rebind(peer.serviceAccessPoint, stub);
+        try {
+            PeerInit stub = (PeerInit) UnicastRemoteObject.exportObject(peer, 0);
+            Registry registry = LocateRegistry.getRegistry();
+            registry.rebind(peer.serviceAccessPoint, stub);
+        } catch (RemoteException e) {
+            System.err.println("Error starting RMI");
+        }
 
         // Execute Channels
         (new Thread(peer.mcChannel)).start();
