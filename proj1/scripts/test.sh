@@ -78,6 +78,6 @@ esac
 # Execute the program
 # Should not need to change anything but the class and its package, unless you use any jar file
 
-# echo "java client.TestApp ${pap} ${oper} ${opernd_1} ${rep_deg}"
+# echo "java test.TestApp ${pap} ${oper} ${opernd_1} ${rep_deg}"
 
-java client.TestApp ${pap} ${oper} ${opernd_1} ${rep_deg}
+java test.TestApp ${pap} ${oper} ${opernd_1} ${rep_deg}

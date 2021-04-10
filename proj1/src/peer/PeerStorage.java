@@ -28,7 +28,7 @@ public class PeerStorage implements Serializable {
         this.sentChunks = new ConcurrentHashMap<>();
         this.storageFileMap = new ConcurrentHashMap<>();
         this.deletedFilesMap = new ConcurrentHashMap<>();
-        this.storagePath = "../PeerStorage/Peer" + id + "/";
+        this.storagePath = "../../PeerStorage/Peer" + id + "/";
 
         // Create peer storage folder
         try {
