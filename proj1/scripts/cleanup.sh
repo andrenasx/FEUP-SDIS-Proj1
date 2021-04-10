@@ -3,13 +3,23 @@
 # Placeholder for clean-up script
 # To be executed in the root of the build tree
 # Requires at most one argument: the peer id
-# Cleans the directory tree for storing 
+# Cleans the directory tree for storing
 #  both the chunks and the restored files of
 #  either a single peer, in which case you may or not use the argument
-#    or for all peers, in which case you 
+#    or for all peers, in which case you
 
 
-rm -rf ../src/PeerStorage
+# Check number input arguments
+argc=$#
+
+if ((argc == 1 ))
+then
+	peer_id=$1
+	rm -rf ../../PeerStorage/Peer${peer_id}
+else
+	echo "Usage: $0 [<peer_id>]]"
+	exit 1
+fi
 
 # Clean the directory tree for storing files
 # For a crash course on shell commands check for example:
