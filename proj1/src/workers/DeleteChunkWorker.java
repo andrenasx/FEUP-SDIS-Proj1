@@ -29,12 +29,12 @@ public class DeleteChunkWorker implements Runnable {
     }
 
     private void sendRemovedMessage(RemovedMessage removedMessage, int attempt) {
-        if (attempt < Utils.MAX_3_ATTEMPTS) {
-            this.peer.sendControlMessage(removedMessage);
-            //System.out.printf("Sent REMOVED for chunk %s\n", this.chunk.getUniqueId());
+        this.peer.sendControlMessage(removedMessage);
+        //System.out.printf("Sent REMOVED for chunk %s\n", this.chunk.getUniqueId());
 
-            int finalAttempt = ++attempt;
-            this.scheduler.schedule(() -> this.sendRemovedMessage(removedMessage, finalAttempt), (long) (Math.pow(2, attempt) * 1000), TimeUnit.MILLISECONDS);
+        int currentAttempt = attempt+1;
+        if (currentAttempt < Utils.MAX_3_ATTEMPTS) {
+            this.scheduler.schedule(() -> this.sendRemovedMessage(removedMessage, currentAttempt), (long) (Math.pow(2, attempt) * 1000), TimeUnit.MILLISECONDS);
         }
     }
 }

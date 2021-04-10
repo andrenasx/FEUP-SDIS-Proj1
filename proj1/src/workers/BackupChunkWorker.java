@@ -32,12 +32,12 @@ public class BackupChunkWorker implements Runnable {
     }
 
     private void sendPutchunkMessage(PutChunkMessage putChunkMessage, int attempt) {
-        if (attempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {
-            this.peer.sendBackupMessage(putChunkMessage);
-            //System.out.printf("Sent PUTCHUNK for chunk %s\n", this.chunk.getUniqueId());
+        this.peer.sendBackupMessage(putChunkMessage);
+        //System.out.printf("Sent PUTCHUNK for chunk %s\n", this.chunk.getUniqueId());
 
-            int finalAttempt = ++attempt;
-            this.scheduler.schedule(() -> this.sendPutchunkMessage(putChunkMessage, finalAttempt), (long) Math.pow(2, ++attempt) * 1000, TimeUnit.MILLISECONDS);
+        int currentAttempt = attempt+1;
+        if (currentAttempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {
+            this.scheduler.schedule(() -> this.sendPutchunkMessage(putChunkMessage, currentAttempt), (long) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
         }
         else {
             this.chunk.clearBody();
