@@ -50,7 +50,7 @@ public class WakeyWorker implements Runnable {
                 socket.close();
 
                 DeleteMessage deleteMessage = DeleteMessage.create(data);
-                // System.out.println("Received delete for " + deleteMessage.getFileId());
+                System.out.println("[WAKEY] Received delete for " + deleteMessage.getFileId());
                 deleteMessage.submitTask(this.peer);
             }
         } catch (IOException e) {

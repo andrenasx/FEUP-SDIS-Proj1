@@ -33,7 +33,7 @@ public class WakeyTask extends Task {
                     // Send respective delete message
                     DeleteMessage deleteMessage = new DeleteMessage(this.peer.getProtocolVersion(), this.peer.getId(), entry.getKey());
                     out.write(deleteMessage.encode());
-                    System.out.printf("[DELETION-TCP] Submitted delete to Peer%d for file: %s\n", this.message.getSenderId(), entry.getKey());
+                    System.out.printf("[WAKEY] Submitted delete to Peer%d for file: %s\n", this.message.getSenderId(), entry.getKey());
 
                     // Close outputstream and socket
                     out.close();

@@ -22,9 +22,14 @@ public class PutchunkTask extends Task {
     public void run() {
         //System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
 
-        // Abort if it was a chunk this peer backed up or if this peer doesn't have enough space
-        if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo()) || !this.peer.getStorage().hasEnoughSpace(this.message.getBody().length / 1000.0)) {
-            //System.out.println("[BACKUP] Aborting PUTCHUNK, my chunk or not enough space");
+        // Abort if it was a chunk this peer backed up
+        if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
+            //System.out.println("[BACKUP] Aborting PUTCHUNK, my sent chunk");
+            return;
+        }
+        // Abort if peer has enough space to store chunk
+        if (!this.peer.getStorage().hasEnoughSpace(this.message.getBody().length / 1000.0)) {
+            System.err.println("[BACKUP] Not enough space to store chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
             return;
         }
 
@@ -71,7 +76,7 @@ public class PutchunkTask extends Task {
     private void storeChunk(Chunk chunk) {
         // Check if peer has enough space to store chunk
         if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
-            System.err.println("Not enough space to store chunk " + chunk.getUniqueId());
+            System.err.println("[BACKUP] Not enough space to store chunk " + chunk.getUniqueId());
             this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
             return;
         }

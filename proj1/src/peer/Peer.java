@@ -59,7 +59,7 @@ public class Peer implements PeerInit {
         }
 
         // Create Peer
-        Peer peer = null;
+        Peer peer;
         try {
             peer = new Peer(args);
         } catch (IOException e) {
