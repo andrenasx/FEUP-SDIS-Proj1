@@ -42,7 +42,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("Error receiving DatagramPacket " + e.getMessage());
             }
         }
     }
@@ -53,7 +53,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
         try {
             this.send(packet);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error sending DatagramPacket");
         }
     }
 }

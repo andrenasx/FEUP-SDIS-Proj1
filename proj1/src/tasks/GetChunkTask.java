@@ -78,7 +78,6 @@ public class GetChunkTask extends Task {
                         socket.close();
                         serverSocket.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
                         System.err.println("Error in TCP socket");
                     }
                 }

@@ -81,8 +81,7 @@ public class TestApp {
                     throw new Exception("Unknown protocol");
             }
         } catch (Exception e) {
-            System.err.println("Client exception: " + e.toString());
-            e.printStackTrace();
+            System.err.println("TestApp exception: " + e.toString());
         }
     }
 }
