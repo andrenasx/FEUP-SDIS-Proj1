@@ -41,7 +41,7 @@ public class PeerStorage implements Serializable {
     public static PeerStorage loadState(Peer peer) {
         PeerStorage storage = null;
         try {
-            FileInputStream fileIn = new FileInputStream("../PeerStorage/Peer" + peer.getId() + "/_state");
+            FileInputStream fileIn = new FileInputStream("../../PeerStorage/Peer" + peer.getId() + "/_state");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             storage = (PeerStorage) in.readObject();
             in.close();
@@ -124,7 +124,7 @@ public class PeerStorage implements Serializable {
 
     public void reclaim(Peer peer, double maxKBytes) {
         // Set new capacity
-        this.storageCapacity = maxKBytes;
+        this.storageCapacity = maxKBytes * 1000;
         System.out.println("\n[RECLAIMING] New storage capacity: " + this.storageCapacity);
 
         // Clean all stored chunks if 0
