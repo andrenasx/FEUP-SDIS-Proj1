@@ -24,9 +24,11 @@ public class WakeyWorker implements Runnable {
         try {
             // Create ServerSocket in a new port, 2secs to timeout
             serverSocket = new ServerSocket(0);
-            serverSocket.setSoTimeout(3000);
+            serverSocket.setSoTimeout(2000);
+            serverSocket.setReceiveBufferSize(64);
         } catch (IOException e) {
-            System.err.println("Error in TCP socket");
+            System.err.println("Error creating TCP socket");
+            return;
         }
 
         // Get connection ports and create byte array to send in Wakey message
@@ -37,18 +39,29 @@ public class WakeyWorker implements Runnable {
         this.peer.sendControlMessage(wakeyMessage);
 
         try {
-            // Create socket and read Delete message sent by TCP
-            Socket socket = serverSocket.accept();
-            InputStream in = socket.getInputStream();
-            byte[] data = in.readAllBytes();
-            in.close();
-            socket.close();
+            while (true) {
+                // Create socket and read Delete message sent by TCP
+                Socket socket = serverSocket.accept();
+                InputStream in = socket.getInputStream();
+                byte[] data = in.readAllBytes();
 
-            DeleteMessage deleteMessage = DeleteMessage.create(data);
-            // System.out.println("Received delete for " + deleteMessage.getFileId());
-            deleteMessage.submitTask(this.peer);
+                // Close inputstream and socket
+                in.close();
+                socket.close();
+
+                DeleteMessage deleteMessage = DeleteMessage.create(data);
+                // System.out.println("Received delete for " + deleteMessage.getFileId());
+                deleteMessage.submitTask(this.peer);
+            }
         } catch (IOException e) {
-            System.out.println("[WAKEY] No DELETEs received");
+            System.out.println("[WAKEY] Closed TCP connection, timeout");
+        }
+
+        // Close server socket
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            System.err.println("Error closing ServerSocket");
         }
     }
 }
