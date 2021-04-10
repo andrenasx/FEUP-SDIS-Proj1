@@ -113,13 +113,13 @@ public class StorageFile implements Serializable {
 
             // Abort if chunk or its body is null
             if (chunk == null || chunk.getBody() == null) {
-                System.err.println("[!RESTORE] Error retrieving chunk, aborting restore");
+                System.err.println("Error retrieving chunk, aborting restore");
                 raf.close();
                 return;
             }
             // Abort if not the last chunk but body has less than 64KB
             else if ((chunk.getChunkNo() != this.num_chunks - 1) && chunk.getBody().length != Utils.CHUNK_SIZE) {
-                System.err.println("[!RESTORE] Not last chunk with less than 64KB, aborting restore");
+                System.err.println("Not last chunk with less than 64KB, aborting restore");
                 chunk.clearBody();
                 raf.close();
                 return;

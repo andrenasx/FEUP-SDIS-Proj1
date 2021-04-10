@@ -4,6 +4,7 @@ import messages.DeleteMessage;
 import peer.Peer;
 import storage.Chunk;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DeleteTask extends Task {
@@ -16,8 +17,9 @@ public class DeleteTask extends Task {
         //System.out.printf("Received DELETE for file %s\n", this.message.getFileId());
 
         // Delete all corresponding fileId chunks after receiving DELETE message
-        ConcurrentHashMap<String, Chunk> chunks = this.peer.getStorage().getStoredChunks();
-        for (Chunk chunk : chunks.values()) {
+        ConcurrentHashMap<String, Chunk> storedChunks = this.peer.getStorage().getStoredChunks();
+        for (Map.Entry<String, Chunk> entry : storedChunks.entrySet()) {
+            Chunk chunk = entry.getValue();
             if (chunk.getFileId().equals(this.message.getFileId())) {
                 this.peer.getStorage().deleteStoredChunk(chunk, "DELETION");
             }

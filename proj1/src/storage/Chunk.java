@@ -20,7 +20,7 @@ public class Chunk implements Serializable {
 
     public Chunk(Message message) {
         this(message.getFileId(), message.getChunkNo(), message.getReplicationDeg(), null);
-        if (message.getBody() != null) this.size = message.getBody().length / 1000.0;
+        if (message.getBody() != null) this.size = message.getBody().length;
     }
 
     public Chunk(String fileId, int chunkNo, int replicationDegree, byte[] body) {

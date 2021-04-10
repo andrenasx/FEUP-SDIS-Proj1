@@ -53,7 +53,7 @@ public class GetChunkTask extends Task {
                 // If this peer and message are enhanced send message with ports for TCP connection
                 if (this.peer.isEnhanced() && this.message.isEnhanced()) {
                     try {
-                        // Create ServerSocket in a new port, 1sec to timeout and 64KBytes buffer
+                        // Create ServerSocket in a new port, 2sec to timeout and 64KBytes buffer
                         ServerSocket serverSocket = new ServerSocket(0);
                         serverSocket.setSoTimeout(2000);
                         serverSocket.setReceiveBufferSize(Utils.CHUNK_SIZE);
@@ -65,7 +65,7 @@ public class GetChunkTask extends Task {
                         // Send CHUNK message with TCP ports
                         ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.getFileId(), this.message.getChunkNo(), content);
                         this.peer.sendRestoreMessage(chunkMessage);
-                        System.out.println("[RESTORE] Sent CHUNK-TCP message for chunk :" + chunkId);
+                        System.out.println("[RESTORE-TCP] Sent CHUNK message for chunk :" + chunkId);
 
                         // Create socket and write chunk body though TCP
                         Socket socket = serverSocket.accept();
@@ -73,9 +73,10 @@ public class GetChunkTask extends Task {
                         out.write(body);
                         //System.out.println("Wrote boddy to TPC connection");
 
-                        // Close buffer and socket after writing chunk body
+                        // Close buffer and sockets after writing chunk body
                         out.close();
                         socket.close();
+                        serverSocket.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                         System.err.println("Error in TCP socket");

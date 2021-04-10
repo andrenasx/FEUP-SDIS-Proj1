@@ -46,16 +46,18 @@ public class PutchunkTask extends Task {
             }
         }
 
-        if(this.peer.isEnhanced()) {
-          this.scheduler.schedule(() -> this.storeChunkEn(chunk), Utils.getRandomEn(400,this.peer.getStorage().getOccupiedSpace(),this.peer.getStorage().getStorageCapacity()), TimeUnit.MILLISECONDS);
+        // Schedule according to peer % used space if enhanced
+        if (this.peer.isEnhanced()) {
+            this.scheduler.schedule(() -> this.storeChunkEn(chunk), Utils.getRandomEn(400, this.peer.getStorage().getOccupiedSpace(), this.peer.getStorage().getStorageCapacity()), TimeUnit.MILLISECONDS);
         }
-        else{
+        // Just schedule randomly between 0-400ms if default
+        else {
             this.scheduler.schedule(() -> this.storeChunk(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
         }
     }
 
-    private void storeChunkEn(Chunk chunk){
-        // If received chunk still needs replication add it to peer map and acknowledge it
+    private void storeChunkEn(Chunk chunk) {
+        // Store chunk only if it still needs replication
         if (chunk.needsReplication()) {
             this.storeChunk(chunk);
         }
@@ -66,14 +68,10 @@ public class PutchunkTask extends Task {
         }
     }
 
-
-
-    private void storeChunk(Chunk chunk){
-        // Sleep between 0-400 ms to avoid collisions
-
+    private void storeChunk(Chunk chunk) {
         // Check if peer has enough space to store chunk
         if (!this.peer.getStorage().hasEnoughSpace(chunk.getSize())) {
-            System.out.println("Not enough space to store chunk " + chunk.getUniqueId());
+            System.err.println("Not enough space to store chunk " + chunk.getUniqueId());
             this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
             return;
         }
@@ -95,8 +93,4 @@ public class PutchunkTask extends Task {
             System.err.printf("Failed to store chunk %s\n", chunk.getUniqueId());
         }
     }
-
-
-
-
 }

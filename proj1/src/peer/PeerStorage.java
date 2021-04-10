@@ -34,7 +34,7 @@ public class PeerStorage implements Serializable {
         try {
             Files.createDirectories(Paths.get(this.storagePath));
         } catch (IOException e) {
-            System.err.println("Failed to create peer storage directory!" + e.getMessage());
+            System.err.println("Failed to create peer storage directory!");
         }
     }
 
@@ -70,7 +70,7 @@ public class PeerStorage implements Serializable {
             fileOut.close();
             System.out.println("\n[STORAGE] Saved Peer storage state successfully\n");
         } catch (IOException i) {
-            System.out.println("[STORAGE] Unable to load Peer storage state from file");
+            System.err.println("[STORAGE] Unable to load Peer storage state from file");
         }
     }
 

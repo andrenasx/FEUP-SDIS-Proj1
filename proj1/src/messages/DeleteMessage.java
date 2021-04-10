@@ -12,7 +12,7 @@ public class DeleteMessage extends Message {
 
     public static DeleteMessage create(byte[] data) {
         String message = new String(data);
-        String[] parts = message.split(" ", 5);
+        String[] parts = message.split(" ");
 
         return new DeleteMessage(parts[0], Integer.parseInt(parts[2]), parts[3]);
     }

@@ -46,7 +46,7 @@ public class ChunkTask extends Task {
                     socket.close();
 
                     chunk.setBody(body);
-                    //System.out.println("[RESTORE] Added body to chunk " /*+ this.message.getFileId() + "_"*/+ this.message.getChunkNo());
+                    //System.out.println("[RESTORE-TCP] Added body to chunk " + this.message.getFileId() + "_"+ this.message.getChunkNo());
                 } catch (IOException e) {
                     System.err.println("Error in TCP socket");
                 }

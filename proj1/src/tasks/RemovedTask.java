@@ -41,8 +41,6 @@ public class RemovedTask extends Task {
         }
     }
 
-
-
     private void startBackup(Chunk chunk){
         // If chunk still needs replication restore chunk body and start backup subprotocol
         if (chunk.needsReplication()) {
@@ -64,6 +62,4 @@ public class RemovedTask extends Task {
             this.scheduler.schedule(() -> this.peer.sendControlMessage(message), 50, TimeUnit.MILLISECONDS);
         }
     }
-
-
 }
