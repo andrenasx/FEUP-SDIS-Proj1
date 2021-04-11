@@ -7,15 +7,11 @@ import storage.Chunk;
 import utils.Utils;
 
 import java.io.IOException;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class PutchunkTask extends Task {
-    private final ScheduledThreadPoolExecutor scheduler;
-
     public PutchunkTask(Peer peer, PutChunkMessage message) {
         super(peer, message);
-        this.scheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     @Override
@@ -53,11 +49,11 @@ public class PutchunkTask extends Task {
 
         // Schedule according to peer % used space if enhanced
         if (this.peer.isEnhanced()) {
-            this.scheduler.schedule(() -> this.storeChunkEn(chunk), Utils.getRandomEn(400, this.peer.getStorage().getOccupiedSpace(), this.peer.getStorage().getStorageCapacity()), TimeUnit.MILLISECONDS);
+            this.peer.getScheduler().schedule(() -> this.storeChunkEn(chunk), Utils.getRandomEn(400, this.peer.getStorage().getOccupiedSpace(), this.peer.getStorage().getStorageCapacity()), TimeUnit.MILLISECONDS);
         }
         // Just schedule randomly between 0-400ms if default
         else {
-            this.scheduler.schedule(() -> this.storeChunk(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
+            this.peer.getScheduler().schedule(() -> this.storeChunk(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
         }
     }
 

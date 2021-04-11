@@ -11,15 +11,11 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class GetChunkTask extends Task {
-    private final ScheduledThreadPoolExecutor scheduler;
-
     public GetChunkTask(Peer peer, GetChunkMessage message) {
         super(peer, message);
-        this.scheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     @Override
@@ -39,7 +35,7 @@ public class GetChunkTask extends Task {
         // Set sent flag to false, flag is set true when another peers sends this chunk
         chunk.setSent(false);
 
-        this.scheduler.schedule(() -> sendChunk(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
+        this.peer.getScheduler().schedule(() -> sendChunk(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
     }
 
     private void sendChunk(Chunk chunk) {

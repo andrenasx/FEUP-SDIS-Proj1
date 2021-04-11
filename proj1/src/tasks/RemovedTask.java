@@ -8,14 +8,11 @@ import utils.Utils;
 import workers.BackupChunkWorker;
 
 import java.io.IOException;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class RemovedTask extends Task {
-    private final ScheduledThreadPoolExecutor scheduler;
     public RemovedTask(Peer peer, Message message) {
         super(peer, message);
-        this.scheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     @Override
@@ -36,12 +33,12 @@ public class RemovedTask extends Task {
             // Check if this peer has this chunk and it needs replication
             if (chunk.needsReplication() && chunk.isStoredLocally()) {
                 // Sleep to avoid collision in case another peer already replicated it
-                this.scheduler.schedule(() -> this.startBackup(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
+                this.peer.getScheduler().schedule(() -> this.startBackup(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
             }
         }
     }
 
-    private void startBackup(Chunk chunk){
+    private void startBackup(Chunk chunk) {
         // If chunk still needs replication restore chunk body and start backup subprotocol
         if (chunk.needsReplication()) {
             try {
@@ -59,7 +56,7 @@ public class RemovedTask extends Task {
 
             StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
             // Sleep to make sure peer stores chunk before receiving this peer STORED message
-            this.scheduler.schedule(() -> this.peer.sendControlMessage(message), 50, TimeUnit.MILLISECONDS);
+            this.peer.getScheduler().schedule(() -> this.peer.sendControlMessage(message), 50, TimeUnit.MILLISECONDS);
         }
     }
 }

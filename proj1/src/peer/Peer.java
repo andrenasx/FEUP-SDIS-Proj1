@@ -28,6 +28,7 @@ public class Peer implements PeerInit {
     private final ExecutorService threadPoolMC;
     private final ExecutorService threadPoolMDB;
     private final ExecutorService threadPoolMDR;
+    private final ScheduledThreadPoolExecutor scheduler;
 
     public static int MAX_THREADS = 16;
     public static int MAX_THREADS_C = 128;
@@ -49,6 +50,7 @@ public class Peer implements PeerInit {
         this.threadPoolMC = Executors.newFixedThreadPool(MAX_THREADS_C);
         this.threadPoolMDB = Executors.newFixedThreadPool(MAX_THREADS);
         this.threadPoolMDR = Executors.newFixedThreadPool(MAX_THREADS);
+        this.scheduler = new ScheduledThreadPoolExecutor(MAX_THREADS_C);
     }
 
 
@@ -89,8 +91,7 @@ public class Peer implements PeerInit {
         }
 
         // Save peer storage periodically (every minute)
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(new Thread(peer.storage::saveState), 1, 1, TimeUnit.MINUTES);
+        peer.scheduler.scheduleAtFixedRate(new Thread(peer.storage::saveState), 1, 1, TimeUnit.MINUTES);
         Runtime.getRuntime().addShutdownHook(new Thread(peer.storage::saveState));
     }
 
@@ -120,6 +121,10 @@ public class Peer implements PeerInit {
 
     public void sendRestoreMessage(Message message) {
         this.mdrChannel.sendMessage(message.encode());
+    }
+
+    public ScheduledThreadPoolExecutor getScheduler() {
+        return this.scheduler;
     }
 
     public String getProtocolVersion() {
