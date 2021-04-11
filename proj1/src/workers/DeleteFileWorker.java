@@ -26,10 +26,10 @@ public class DeleteFileWorker implements Runnable {
 
     private void sendDeleteMessage(DeleteMessage deleteMessage, int attempt) {
         this.peer.sendControlMessage(deleteMessage);
-        //System.out.printf("Sent DELETE for chunk %s\n", this.chunk.getUniqueId());
+        //System.out.printf("Sent DELETE for file %s\n", deleteMessage.getFileId());
 
         int currentAttempt = attempt + 1;
-        if (attempt < Utils.MAX_3_ATTEMPTS) {
+        if (currentAttempt < Utils.MAX_3_ATTEMPTS) {
             this.peer.getScheduler().schedule(() -> this.sendDeleteMessage(deleteMessage, currentAttempt), (long) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
         }
     }
