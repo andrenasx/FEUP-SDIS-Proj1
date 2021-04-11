@@ -19,11 +19,6 @@ public class Utils {
         return new Random().nextInt(max + 1);
     }
 
-    public static int getRandomEn(int max, double occupiedSpace, double maxSpace) {
-        int lowerBound = (int) (max * (occupiedSpace / maxSpace));
-        return new Random().nextInt(max - lowerBound + 1) + lowerBound;
-    }
-
     public static void sleep(int millis) {
         try {
             Thread.sleep(millis);

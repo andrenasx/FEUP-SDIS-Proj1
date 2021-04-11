@@ -47,7 +47,7 @@ public class PutchunkTask extends Task {
             }
         }
 
-        // Schedule according to peer % used space if enhanced
+        // After schedule verify if chunk needs replication in case peer is enhanced
         if (this.peer.isEnhanced()) {
             this.peer.getScheduler().schedule(() -> this.storeChunkEn(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
         }
