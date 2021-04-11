@@ -22,12 +22,12 @@ public class RemovedTask extends Task {
         // Remove peer acknowledge to received chunk
         if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
-            chunk.removePeerAck(this.message.getSenderId());
+            chunk.removePeerStoring(this.message.getSenderId());
             //System.out.println("[RECLAIMING] Removed ack from peer " + this.message.getFileId() + " for sent chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
         else if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
-            chunk.removePeerAck(this.message.getSenderId());
+            chunk.removePeerStoring(this.message.getSenderId());
             //System.out.println("[RECLAIMING] Removed ack from peer " + this.message.getFileId() +" for stored chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
 
             // Check if this peer has this chunk and it needs replication

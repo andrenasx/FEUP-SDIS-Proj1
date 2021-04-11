@@ -13,7 +13,7 @@ public class Chunk implements Serializable {
     private final int replicationDegree;
     private byte[] body;
     private double size = 0;
-    private final Set<Integer> peersAcks = ConcurrentHashMap.newKeySet();
+    private final Set<Integer> peersStoring = ConcurrentHashMap.newKeySet();
 
     private boolean storedLocally = false;
     private boolean sent = false;
@@ -32,20 +32,20 @@ public class Chunk implements Serializable {
         if (body != null) this.size = body.length;
     }
 
-    public void addPeerAck(int peerId) {
-        this.peersAcks.add(peerId);
+    public void addPeerStoring(int peerId) {
+        this.peersStoring.add(peerId);
     }
 
-    public void removePeerAck(int peerId) {
-        this.peersAcks.remove(peerId);
+    public void removePeerStoring(int peerId) {
+        this.peersStoring.remove(peerId);
     }
 
-    public Set<Integer> getPeersAcks() {
-        return this.peersAcks;
+    public Set<Integer> getPeersStoring() {
+        return this.peersStoring;
     }
 
-    public int getNumberPeersAcks() {
-        return this.peersAcks.size();
+    public int getNumberPeersStoring() {
+        return this.peersStoring.size();
     }
 
     public int getDesiredReplicationDegree() {
@@ -53,11 +53,11 @@ public class Chunk implements Serializable {
     }
 
     public boolean needsReplication() {
-        return this.peersAcks.size() < this.replicationDegree;
+        return this.peersStoring.size() < this.replicationDegree;
     }
 
     public boolean isOverReplicated() {
-        return this.peersAcks.size() > this.replicationDegree;
+        return this.peersStoring.size() > this.replicationDegree;
     }
 
     public String getUniqueId() {
@@ -113,10 +113,10 @@ public class Chunk implements Serializable {
     }
 
     public String toStringSent() {
-        return "CHUNK -> id: " + id + " ; perceived replication degree: " + peersAcks.size();
+        return "CHUNK -> id: " + id + " ; perceived replication degree: " + peersStoring.size();
     }
 
     public String toStringStored() {
-        return "CHUNK -> id: " + id + " ; size: " + (size / 1000.0) + " KBytes ; desired replication degree: " + replicationDegree + " ; perceived replication degree: " + peersAcks.size();
+        return "CHUNK -> id: " + id + " ; size: " + (size / 1000.0) + " KBytes ; desired replication degree: " + replicationDegree + " ; perceived replication degree: " + peersStoring.size();
     }
 }

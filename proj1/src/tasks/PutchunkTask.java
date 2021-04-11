@@ -49,7 +49,7 @@ public class PutchunkTask extends Task {
 
         // Schedule according to peer % used space if enhanced
         if (this.peer.isEnhanced()) {
-            this.peer.getScheduler().schedule(() -> this.storeChunkEn(chunk), Utils.getRandomEn(400, this.peer.getStorage().getOccupiedSpace(), this.peer.getStorage().getStorageCapacity()), TimeUnit.MILLISECONDS);
+            this.peer.getScheduler().schedule(() -> this.storeChunkEn(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
         }
         // Just schedule randomly between 0-400ms if default
         else {
@@ -83,7 +83,7 @@ public class PutchunkTask extends Task {
 
             // Acknowledge that chunk is stored and add it to peer ack Set
             chunk.setStoredLocally(true);
-            chunk.addPeerAck(this.peer.getId());
+            chunk.addPeerStoring(this.peer.getId());
 
             // Send stored message
             StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());

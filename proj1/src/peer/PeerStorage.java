@@ -114,7 +114,7 @@ public class PeerStorage implements Serializable {
         // Delete all sent chunks with given fileId
         for (Chunk chunk : this.sentChunks.values()) {
             if (chunk.getFileId().equals(fileId)) {
-                deletedFileAcks.addAll(chunk.getPeersAcks());
+                deletedFileAcks.addAll(chunk.getPeersStoring());
                 this.sentChunks.remove(chunk.getUniqueId());
             }
         }
