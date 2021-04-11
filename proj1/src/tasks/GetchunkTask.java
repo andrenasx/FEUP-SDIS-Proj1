@@ -13,8 +13,8 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-public class GetChunkTask extends Task {
-    public GetChunkTask(Peer peer, GetChunkMessage message) {
+public class GetchunkTask extends Task {
+    public GetchunkTask(Peer peer, GetChunkMessage message) {
         super(peer, message);
     }
 
