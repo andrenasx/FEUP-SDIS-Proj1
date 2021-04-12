@@ -7,7 +7,7 @@
 ## Running
 Inside the `src/build` folder:
 
-1. Open a terminal and run `rmiregistry &` to start the RMI needed for the TestApp
+1. Open a terminal and run `rmiregistry` to start the RMI needed for the TestApp
 2. Open as many terminals needed for the number of peers and run `sh ../../scripts/peer.sh <version> <peer_id> <svc_access_point> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port>`
     - version: Protocol version (1.0 for standard protocol, 2.0 for enhanced protocol)
     - peer_id: Peer's unique identifier.
@@ -28,7 +28,7 @@ Inside the `src/build` folder:
 1. Open 1 terminal (TERMINAL1) in `src` folder
 2. In TERMINAL1: `sh ../scripts/compile.sh`
 3. Open 6 terminals (TERMINAL2, TERMINAL3, TERMINAL4, TERMINAL5, TERMINAL6, TERMINAL7) inside `src/build` folder
-4. In TERMINAL2: `rmiregistry &`
+4. In TERMINAL2: `rmiregistry`
 5. In TERMINAL3: `sh ../../scripts/peer.sh 1.0 1 peer1 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003`
 6. In TERMINAL4: `sh ../../scripts/peer.sh 1.0 2 peer2 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003`
 7. In TERMINAL5: `sh ../../scripts/peer.sh 1.0 3 peer3 224.0.0.15 8001 224.0.0.16 8002 224.0.0.17 8003`
