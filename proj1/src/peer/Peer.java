@@ -145,11 +145,16 @@ public class Peer implements PeerInit {
 
     @Override
     public String toString() {
-        return String.format("[PEER] Peer %d with version %s is Online", this.id, this.protocolVersion);
+        return String.format("[PEER] Peer %d with version %s is now running", this.id, this.protocolVersion);
     }
 
     @Override
     public void backup(String filepath, int replicationDegree) {
+        if (this.storage.getStorageFileMap().containsKey(filepath)){
+            System.out.println("There is already a backed up version for " +  filepath + ". Delete it before proceeding to a new backup.");
+            return;
+        }
+
         try {
             StorageFile storageFile = new StorageFile(filepath, replicationDegree);
             storageFile.backup(this);
