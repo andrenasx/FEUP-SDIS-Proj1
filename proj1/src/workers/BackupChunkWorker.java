@@ -25,17 +25,17 @@ public class BackupChunkWorker implements Runnable {
 
         PutChunkMessage putChunkMessage = new PutChunkMessage(this.peer, this.chunk);
         // Try to send PUTCHUNK message max 5 times or until Replication degree is met
-        this.peer.getScheduler().submit(() -> this.sendPutchunkMessage(putChunkMessage, 0));
+        this.peer.sendBackupMessage(putChunkMessage);
+        this.peer.getScheduler().schedule(() -> this.sendPutchunkMessage(putChunkMessage, 1), 1000, TimeUnit.MILLISECONDS);
     }
 
     private void sendPutchunkMessage(PutChunkMessage putChunkMessage, int attempt) {
-        this.peer.sendBackupMessage(putChunkMessage);
+        if (attempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {
+            this.peer.sendBackupMessage(putChunkMessage);
 
-        int currentAttempt = attempt + 1;
-        if (currentAttempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {
-            this.peer.getScheduler().schedule(() -> this.sendPutchunkMessage(putChunkMessage, currentAttempt), (long) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
-        }
-        else {
+            int finalAttempt = attempt+1;
+            this.peer.getScheduler().schedule(() -> this.sendPutchunkMessage(putChunkMessage, finalAttempt), (long) Math.pow(2, attempt) * 1000, TimeUnit.MILLISECONDS);
+        } else {
             this.chunk.clearBody();
         }
     }

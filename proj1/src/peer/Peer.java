@@ -30,7 +30,7 @@ public class Peer implements PeerInit {
     private final ExecutorService threadPoolMDR;
     private final ScheduledThreadPoolExecutor scheduler;
 
-    public static int MAX_THREADS = 16;
+    public static int MAX_THREADS = 32;
     public static int MAX_THREADS_C = 128;
 
     public Peer(String[] args) throws IOException {
@@ -50,7 +50,7 @@ public class Peer implements PeerInit {
         this.threadPoolMC = Executors.newFixedThreadPool(MAX_THREADS_C);
         this.threadPoolMDB = Executors.newFixedThreadPool(MAX_THREADS);
         this.threadPoolMDR = Executors.newFixedThreadPool(MAX_THREADS);
-        this.scheduler = new ScheduledThreadPoolExecutor(MAX_THREADS_C);
+        this.scheduler = new ScheduledThreadPoolExecutor(MAX_THREADS_C*2);
     }
 
 
