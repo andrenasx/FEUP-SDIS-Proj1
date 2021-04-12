@@ -22,14 +22,15 @@ public class DeleteChunkWorker implements Runnable {
 
         RemovedMessage removedMessage = new RemovedMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.chunk.getFileId(), this.chunk.getChunkNo());
         // Try to send REMOVED message max 3 times
-        this.peer.getScheduler().submit(() -> this.sendRemovedMessage(removedMessage, 0));
+        this.peer.sendControlMessage(removedMessage);
+        this.peer.getScheduler().schedule(() -> this.sendRemovedMessage(removedMessage, 1), 1000, TimeUnit.MILLISECONDS);
     }
 
     private void sendRemovedMessage(RemovedMessage removedMessage, int attempt) {
-        this.peer.sendControlMessage(removedMessage);
+        if (attempt < Utils.MAX_3_ATTEMPTS) {
+            this.peer.sendControlMessage(removedMessage);
 
-        int currentAttempt = attempt + 1;
-        if (currentAttempt < Utils.MAX_3_ATTEMPTS) {
+            int currentAttempt = attempt + 1;
             this.peer.getScheduler().schedule(() -> this.sendRemovedMessage(removedMessage, currentAttempt), (long) (Math.pow(2, attempt) * 1000), TimeUnit.MILLISECONDS);
         }
     }
