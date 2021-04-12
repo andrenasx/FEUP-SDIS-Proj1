@@ -42,7 +42,7 @@ public class MulticastChannel extends MulticastSocket implements Runnable {
                 }
 
             } catch (Exception e) {
-                System.err.println("Error receiving DatagramPacket " + e.getMessage());
+                System.err.println("Error receiving DatagramPacket: " + e.getMessage());
             }
         }
     }

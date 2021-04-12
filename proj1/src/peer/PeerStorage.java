@@ -124,8 +124,8 @@ public class PeerStorage implements Serializable {
 
     public void reclaim(Peer peer, double maxKBytes) {
         // Set new capacity
+        System.out.println("\n[RECLAIMING] New storage capacity: " + maxKBytes + " KBytes");
         this.storageCapacity = maxKBytes * 1000;
-        System.out.println("\n[RECLAIMING] New storage capacity: " + this.storageCapacity);
 
         // Clean all stored chunks if 0
         if (maxKBytes == 0) {
