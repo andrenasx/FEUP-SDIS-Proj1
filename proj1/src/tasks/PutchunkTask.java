@@ -16,14 +16,11 @@ public class PutchunkTask extends Task {
 
     @Override
     public void run() {
-        //System.out.println(String.format("Received PUTCHUNK: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
-
         // Abort if it was a chunk this peer backed up
         if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
-            //System.out.println("[BACKUP] Aborting PUTCHUNK, my sent chunk");
             return;
         }
-        // Abort if peer has enough space to store chunk
+        // Abort if peer does not have enough space to store chunk
         if (!this.peer.getStorage().hasEnoughSpace(this.message.getBody().length / 1000.0)) {
             System.err.println("[BACKUP] Not enough space to store chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
             return;
@@ -42,7 +39,6 @@ public class PutchunkTask extends Task {
             if (chunk.isStoredLocally()) {
                 StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
                 this.peer.sendControlMessage(message);
-                //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", c.getChunkNo(), c.getFileId()));
                 return;
             }
         }
@@ -62,10 +58,9 @@ public class PutchunkTask extends Task {
         if (chunk.needsReplication()) {
             this.storeChunk(chunk);
         }
-        // Else if already replicated remove from peer map
+        // Else if already replicated remove from peer stored chunks map
         else {
             this.peer.getStorage().removeStoredChunk(chunk.getUniqueId());
-            //System.out.println(String.format("Chunk No: %d of file: %s is already completely replicated", c.getChunkNo(), c.getFileId()));
         }
     }
 
@@ -88,8 +83,6 @@ public class PutchunkTask extends Task {
             // Send stored message
             StoredMessage message = new StoredMessage(this.peer.getProtocolVersion(), this.peer.getId(), chunk.getFileId(), chunk.getChunkNo());
             this.peer.sendControlMessage(message);
-
-            //System.out.println(String.format("Sent STORED: chunk no: %d ; file: %s", chunk.getChunkNo(), chunk.getFileId()));
         } catch (IOException e) {
             System.err.printf("Failed to store chunk %s\n", chunk.getUniqueId());
         }

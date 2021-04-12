@@ -30,7 +30,6 @@ public class BackupChunkWorker implements Runnable {
 
     private void sendPutchunkMessage(PutChunkMessage putChunkMessage, int attempt) {
         this.peer.sendBackupMessage(putChunkMessage);
-        //System.out.printf("Sent PUTCHUNK for chunk %s\n", this.chunk.getUniqueId());
 
         int currentAttempt = attempt + 1;
         if (currentAttempt < Utils.MAX_5_ATTEMPTS && this.chunk.needsReplication()) {

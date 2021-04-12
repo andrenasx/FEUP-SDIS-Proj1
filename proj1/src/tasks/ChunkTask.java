@@ -19,7 +19,6 @@ public class ChunkTask extends Task {
         if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.setSent(true);
-            //System.out.println("[RESTORE] Received CHUNK from  " + this.message.getSenderId() + " for chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
 
         // If it is a sent chunk, add body to the chunk so we can restore information
@@ -39,22 +38,19 @@ public class ChunkTask extends Task {
                     // Read chunk body
                     InputStream in = socket.getInputStream();
                     byte[] body = in.readAllBytes();
-                    //System.out.println("Read body from TCP connection");
 
                     // Close buffer and socket after reading chunk body
                     in.close();
                     socket.close();
 
                     chunk.setBody(body);
-                    //System.out.println("[RESTORE-TCP] Added body to chunk " + this.message.getFileId() + "_"+ this.message.getChunkNo());
                 } catch (IOException e) {
                     System.err.println("Error in TCP socket");
                 }
             }
-            // If normal just set the body from the CHUNK message
+            // If default just set the body from the CHUNK message
             else {
                 chunk.setBody(message.getBody());
-                //System.out.println("[RESTORE] Added body to chunk " + this.message.getFileId() + "_" + this.message.getChunkNo());
             }
         }
     }

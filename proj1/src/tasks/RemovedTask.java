@@ -17,22 +17,18 @@ public class RemovedTask extends Task {
 
     @Override
     public void run() {
-        //System.out.println(String.format("Received REMOVED: chunk no: %d ; file: %s", this.message.getChunkNo(), this.message.getFileId()));
-
         // Remove peer acknowledge to received chunk
         if (this.peer.getStorage().hasSentChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getSentChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.removePeerStoring(this.message.getSenderId());
-            //System.out.println("[RECLAIMING] Removed ack from peer " + this.message.getFileId() + " for sent chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
         }
         else if (this.peer.getStorage().hasStoredChunk(this.message.getFileId(), this.message.getChunkNo())) {
             Chunk chunk = this.peer.getStorage().getStoredChunk(this.message.getFileId(), this.message.getChunkNo());
             chunk.removePeerStoring(this.message.getSenderId());
-            //System.out.println("[RECLAIMING] Removed ack from peer " + this.message.getFileId() +" for stored chunk: " + this.message.getFileId() + "_" + this.message.getChunkNo());
 
             // Check if this peer has this chunk and it needs replication
             if (chunk.needsReplication() && chunk.isStoredLocally()) {
-                // Sleep to avoid collision in case another peer already replicated it
+                // Schedule to avoid collision in case another peer already replicated it
                 this.peer.getScheduler().schedule(() -> this.startBackup(chunk), Utils.getRandom(400), TimeUnit.MILLISECONDS);
             }
         }
@@ -45,6 +41,7 @@ public class RemovedTask extends Task {
                 chunk.setBody(this.peer.getStorage().restoreChunkBody(chunk.getUniqueId()));
             } catch (IOException e) {
                 System.err.println("Couldn't restore chunk body");
+                return;
             }
 
             System.out.printf("[RECLAIMING] Chunk %s needs replication\n", chunk.getUniqueId());

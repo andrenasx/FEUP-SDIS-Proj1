@@ -27,7 +27,6 @@ public class DeleteChunkWorker implements Runnable {
 
     private void sendRemovedMessage(RemovedMessage removedMessage, int attempt) {
         this.peer.sendControlMessage(removedMessage);
-        //System.out.printf("Sent REMOVED for chunk %s\n", this.chunk.getUniqueId());
 
         int currentAttempt = attempt + 1;
         if (currentAttempt < Utils.MAX_3_ATTEMPTS) {

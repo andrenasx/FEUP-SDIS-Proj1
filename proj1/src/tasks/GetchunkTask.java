@@ -20,15 +20,12 @@ public class GetchunkTask extends Task {
 
     @Override
     public void run() {
-        //System.out.println("Received GETCHUNK from " + message.getSenderId() + " for chunk no " + message.getChunkNo());
-
         // Get corresponding stored chunk
         String chunkId = this.message.getFileId() + "_" + this.message.getChunkNo();
         Chunk chunk = this.peer.getStorage().getStoredChunk(chunkId);
 
         // Abort if peer does not have chunk stored
         if (chunk == null || !chunk.isStoredLocally()) {
-            //System.out.println("Don't have chunk, id: " + chunkId);
             return;
         }
 
@@ -39,7 +36,7 @@ public class GetchunkTask extends Task {
     }
 
     private void sendChunk(Chunk chunk) {
-        // Send this chunk if no other peer sent this chunk before me
+        // Send this chunk if no other peer sent it before me
         if (!chunk.getSent()) {
             String chunkId = chunk.getUniqueId();
             try {
@@ -67,7 +64,6 @@ public class GetchunkTask extends Task {
                         Socket socket = serverSocket.accept();
                         OutputStream out = socket.getOutputStream();
                         out.write(body);
-                        //System.out.println("Wrote boddy to TPC connection");
 
                         // Close buffer and sockets after writing chunk body
                         out.close();
@@ -77,7 +73,7 @@ public class GetchunkTask extends Task {
                         System.err.println("Error in TCP socket");
                     }
                 }
-                // If normal just send "default" CHUNK message
+                // If default just send "default" CHUNK message
                 else {
                     ChunkMessage chunkMessage = new ChunkMessage(this.peer.getProtocolVersion(), this.peer.getId(), this.message.getFileId(), this.message.getChunkNo(), body);
                     this.peer.sendRestoreMessage(chunkMessage);

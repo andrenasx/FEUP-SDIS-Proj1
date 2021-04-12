@@ -92,8 +92,6 @@ public class PeerStorage implements Serializable {
     }
 
     public void deleteStoredChunk(Chunk chunk, String protocol) {
-        //System.out.printf("Called DELETE for %s\n", this.storagePath + chunk.getUniqueId());
-
         // Delete stored chunk file and remove it from map
         File file = new File(this.storagePath + chunk.getUniqueId());
         if (file.delete()) {
@@ -274,17 +272,6 @@ public class PeerStorage implements Serializable {
         sb.append("\n---Stored Chunks---\n");
         for (Chunk chunk : this.storedChunks.values()) {
             sb.append(chunk.toStringStored()).append("\n");
-        }
-
-        sb.append("\n---Deleted Files---\n");
-        for (Map.Entry<String, Set<Integer>> entry : this.deletedFilesMap.entrySet()) {
-            sb.append("FILE -> pathname: ")
-                    .append(entry.getKey())
-                    .append(" ; Peer acks: ");
-            for (int id : entry.getValue()) {
-                sb.append(id).append("; ");
-            }
-            sb.append("\n");
         }
 
         sb.append("\n---Storage---\n")

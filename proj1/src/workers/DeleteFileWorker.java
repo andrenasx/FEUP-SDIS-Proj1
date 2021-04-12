@@ -26,7 +26,6 @@ public class DeleteFileWorker implements Runnable {
 
     private void sendDeleteMessage(DeleteMessage deleteMessage, int attempt) {
         this.peer.sendControlMessage(deleteMessage);
-        //System.out.printf("Sent DELETE for file %s\n", deleteMessage.getFileId());
 
         int currentAttempt = attempt + 1;
         if (currentAttempt < Utils.MAX_3_ATTEMPTS) {
